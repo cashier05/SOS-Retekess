@@ -2,703 +2,235 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Panggilan Supervisor / Alarm Pos</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'pulse-fast': 'pulse 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'bounce-short': 'bounce 0.8s infinite',
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Panggil Alarm - Kasir</title>
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
+        :root {
+            --primary: #2c3e50;
+            --accent: #f1c40f;
+            --bg: #ecf0f1;
+            --text: #333;
+            --danger: #e74c3c;
+            --success: #2ecc71;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        header { background-color: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.2rem; }
+        header p { font-size: 0.8rem; opacity: 0.8; margin-top: 4px; }
+
+        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
+
+        .section-title { font-size: 0.9rem; font-weight: bold; color: var(--primary); margin: 15px 0 10px 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .pos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (min-width: 600px) { .pos-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .pos-card { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.1s, box-shadow 0.2s; border: 2px solid transparent; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; }
+        .pos-card:active { transform: scale(0.97); }
+        .pos-card.selected { border-color: var(--accent); background-color: #fffdf2; }
+
+        .pos-name { font-size: 1.3rem; font-weight: bold; color: var(--primary); margin-bottom: 2px; }
+        .pos-type { font-size: 0.65rem; color: #7f8c8d; text-transform: uppercase; margin-bottom: 8px; }
+
+        .btn-panggil { background-color: #bdc3c7; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; width: 100%; text-transform: uppercase; cursor: pointer; }
+        .pos-card.selected .btn-panggil { background-color: var(--success); }
+
+        /* Status Calling */
+        .pos-card.calling { animation: pulseDanger 1s infinite; border-color: var(--danger); background-color: #fff5f5; }
+        .pos-card.calling .btn-panggil { display: none; }
         
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        .btn-batal-pos { background-color: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; width: 100%; text-transform: uppercase; cursor: pointer; display: none; }
+        .pos-card.calling .btn-batal-pos { display: block; background-color: var(--danger); }
 
-        .alarm-flashing {
-            animation: alarmFlash 0.8s infinite alternate;
-        }
+        @keyframes pulseDanger { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
 
-        @keyframes alarmFlash {
-            0% { background-color: #ef4444; color: #ffffff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
-            100% { background-color: #7f1d1d; color: #fecdd3; box-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
-        }
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; padding: 20px; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .modal { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s; }
+        .modal-overlay.open .modal { transform: translateY(0); }
+        .modal h2 { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; }
+        .modal p { font-size: 1rem; color: #7f8c8d; margin-bottom: 25px; }
+        
+        .modal-buttons { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-cancel { background-color: #bdc3c7; color: var(--primary); }
+        .btn-confirm { background-color: var(--success); color: white; }
+
+        /* Notification */
+        #notif { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 25px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-weight: bold; display: none; z-index: 2000; font-size: 0.9rem; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body>
 
-    <!-- Header Navigation -->
-    <header class="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-500/20">
-                    <i class="fa-solid font-bold fa-bell"></i>
-                </div>
-                <div>
-                    <h1 class="font-extrabold text-lg sm:text-xl text-white tracking-tight flex items-center gap-2">
-                        PANGGIL ALAM <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Supervisor Call</span>
-                    </h1>
-                    <p class="text-xs text-slate-400 hidden sm:block">Sistem Panggilan Bantuan Kasir & Pos Counter</p>
-                </div>
-            </div>
+<header>
+    <h1>Menu Kasir</h1>
+    <p>Sistem Panggil Alarm (Supervisor)</p>
+</header>
 
-            <!-- View Switcher Tabs -->
-            <div class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-700/60">
-                <button id="btnTabKasir" onclick="switchTab('kasir')" class="flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-white bg-slate-700 shadow">
-                    <i class="fa-solid fa-cash-register"></i>
-                    <span>Mode Kasir</span>
-                </button>
-                <button id="btnTabSupervisor" onclick="switchTab('supervisor')" class="flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 relative">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>Supervisor</span>
-                    <span id="activeBadgeCount" class="hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse shadow-md">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
+<div class="container">
+    <div class="section-title">Pos Kassa Utama</div>
+    <div class="pos-grid" id="kassaGrid"></div>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+    <div class="section-title">Pos Counter</div>
+    <div class="pos-grid" id="counterGrid"></div>
+</div>
 
-        <!-- ================= MODE KASIR VIEW ================= -->
-        <section id="viewKasir" class="space-y-6 flex-1 flex flex-col">
-            <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3 text-amber-400">
-                    <i class="fa-solid fa-circle-info text-xl"></i>
-                    <p class="text-xs sm:text-sm text-slate-300">
-                        Tekan nama <span class="font-bold text-white">Pos Kasir</span> atau <span class="font-bold text-white">Pos Counter</span> Anda di bawah untuk memanggil Supervisor jika membutuhkan bantuan.
-                    </p>
-                </div>
-                <div class="text-xs text-slate-400 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700/50 flex items-center gap-2 self-end sm:self-auto shrink-0">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    Sistem Siap (Online)
-                </div>
-            </div>
+<div id="notif">Notifikasi</div>
 
-            <!-- Toast / Status Panggilan Terakhir Kasir -->
-            <div id="kasirNotification" class="hidden transition-all duration-300 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 p-4 rounded-xl flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-circle-check text-2xl text-emerald-400"></i>
-                    <div>
-                        <div class="font-bold text-sm text-white" id="kasirNotifTitle">Panggilan Terkirim!</div>
-                        <div class="text-xs text-emerald-300/80" id="kasirNotifDesc">Supervisor sedang diberi pemberitahuan...</div>
-                    </div>
-                </div>
-                <button onclick="dismissKasirNotif()" class="text-emerald-400 hover:text-white px-2 py-1 text-sm font-semibold">Tutup</button>
-            </div>
-
-            <!-- Grid 1: Pos Kassa (1 - 11) -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
-                        <i class="fa-solid fa-calculator text-amber-500"></i> POS KASSA UTAMA (1 - 11)
-                    </h2>
-                    <span class="text-xs text-slate-400">11 Kassa</span>
-                </div>
-                <div id="gridKassa" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    <!-- Dynamic Kassa 1 to 11 Generated via JS -->
-                </div>
-            </div>
-
-            <!-- Grid 2: Pos Counter Food & Beverage / Specialty -->
-            <div class="space-y-3 pt-4">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
-                        <i class="fa-solid fa-utensils text-rose-500"></i> POS COUNTER AREA
-                    </h2>
-                    <span class="text-xs text-slate-400">12 Counter</span>
-                </div>
-                <div id="gridCounter" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    <!-- Dynamic Counters Generated via JS -->
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= MODE SUPERVISOR VIEW ================= -->
-        <section id="viewSupervisor" class="hidden space-y-6 flex-1 flex-col">
-            <!-- Alert Banner Controls -->
-            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div id="statusPulse" class="w-4 h-4 rounded-full bg-emerald-500"></div>
-                    <div>
-                        <h2 class="font-bold text-slate-100 text-sm sm:text-base">DASHBOARD MONITORING SUPERVISOR</h2>
-                        <p id="statusSubText" class="text-xs text-slate-400">Memantau panggilan dari semua Pos secara real-time.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap sm:flex-nowrap">
-                    <!-- Mute / Unmute Sound Audio Toggle -->
-                    <button id="btnSoundToggle" onclick="toggleAudioState()" class="flex-1 md:flex-none px-4 py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl font-semibold text-xs text-slate-200 flex items-center justify-center gap-2 transition">
-                        <i id="soundIcon" class="fa-solid fa-volume-high text-emerald-400"></i>
-                        <span id="soundText">Suara Alarm: AKTIF</span>
-                    </button>
-                    <!-- Clear All Active Alerts -->
-                    <button onclick="clearAllCalls()" class="px-4 py-2 bg-slate-700/70 hover:bg-red-900/50 hover:text-red-300 text-slate-400 border border-slate-600/70 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition">
-                        <i class="fa-solid fa-trash-can"></i>
-                        <span>Reset Semua</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Active Emergency Banner Display (Shows up when alarms exist) -->
-            <div id="activeAlarmBanner" class="hidden alarm-flashing p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left transition-all">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-3xl shrink-0 animate-bounce">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs uppercase font-extrabold tracking-widest text-white/90">BANTUAN DIBUTUHKAN SEGARA!</div>
-                        <div id="activeAlarmPosName" class="text-2xl sm:text-4xl font-black tracking-tight text-white mt-0.5">KASSA 3</div>
-                        <div id="activeAlarmTime" class="text-xs text-white/80 mt-1 font-mono">Terpanggil 5 detik yang lalu</div>
-                    </div>
-                </div>
-                <button onclick="acknowledgeLatestCall()" class="w-full sm:w-auto px-6 py-3 bg-white text-red-600 hover:bg-slate-100 font-extrabold text-sm rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-check text-lg"></i>
-                    <span>RESPOND & MATIKAN ALARM</span>
-                </button>
-            </div>
-
-            <!-- Live Active Calls List Grid -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h3 class="font-bold text-slate-300 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-[#fa5252] fa-fire text-amber-500"></i> DAFTAR PANGGILAN AKTIF
-                    </h3>
-                    <span id="activeCountTag" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400">0 Panggilan</span>
-                </div>
-
-                <div id="activeCallsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Dynamic Active Cards -->
-                </div>
-
-                <!-- Empty State -->
-                <div id="emptyCallsState" class="bg-slate-800/30 border border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
-                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 text-2xl">
-                        <i class="fa-solid fa-shield-cat"></i>
-                    </div>
-                    <div class="text-slate-300 font-semibold">Tidak Ada Panggilan Aktif</div>
-                    <p class="text-xs text-slate-500 max-w-sm">Semua Pos Kasir dan Counter dalam keadaan aman. Notifikasi alarm akan muncul otomatis di sini ketika ada panggilan.</p>
-                </div>
-            </div>
-
-            <!-- History Call Log (Completed / Acknowledged) -->
-            <div class="space-y-3 pt-6">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h3 class="font-bold text-slate-400 text-xs uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Panggilan Selesai
-                    </h3>
-                    <button onclick="clearHistory()" class="text-[11px] text-slate-500 hover:text-slate-300">Bersihkan Riwayat</button>
-                </div>
-                <div id="historyList" class="divide-y divide-slate-800/60 bg-slate-800/20 rounded-xl border border-slate-800/80 overflow-hidden">
-                    <div class="p-4 text-center text-xs text-slate-500" id="emptyHistory">Belum ada riwayat panggilan.</div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Modal Konfirmasi Panggilan (Mode Kasir) -->
-    <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 space-y-5 shadow-2xl text-center transform transition-all">
-            <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto text-3xl">
-                <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
-            </div>
-            <div>
-                <h3 class="text-lg font-extrabold text-white">Panggil Supervisor?</h3>
-                <p class="text-xs text-slate-300 mt-1">Anda akan memicu alarm panggilan bantuan untuk:</p>
-                <div id="modalPosTitle" class="text-xl font-black text-amber-400 mt-2 bg-slate-900/80 py-2 px-3 rounded-xl border border-slate-700">POS KASSA 1</div>
-            </div>
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="closeConfirmModal()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs sm:text-sm rounded-xl transition">
-                    Batal
-                </button>
-                <button id="btnSendCall" onclick="executeCall()" class="px-4 py-2.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <span>KIRIM ALARM</span>
-                </button>
-            </div>
+<!-- Modal Konfirmasi -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h2>Konfirmasi</h2>
+        <p>Apakah Anda yakin ingin memanggil Supervisor ke <strong id="modalPosName">Pos X</strong>?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-cancel" onclick="closeModal()">Batal</button>
+            <button class="btn btn-confirm" id="btnConfirmCall">KIRIM ALARM</button>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-950 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>&copy; System Alarm Pos Retail - Supervisor Alert Network</div>
-            <div class="flex items-center gap-4 text-[11px] text-slate-400">
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Realtime Broadcast Sync</span>
-                <span>•</span>
-                <span>Web Audio Alarm Synth</span>
-            </div>
-        </div>
-    </footer>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8qkD7b6zRqVXP0q8TTsstCUGfNkknEuY",
+      authDomain: "panggil-alam-kasir.firebaseapp.com",
+      databaseURL: "https://panggil-alam-kasir-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "panggil-alam-kasir",
+      storageBucket: "panggil-alam-kasir.firebasestorage.app",
+      messagingSenderId: "189819600293",
+      appId: "1:189819600293:web:db93782d4094ae54a77c4c",
+      measurementId: "G-Z0VBG64G95"
+    };
 
-    <!-- Application Scripting Logic -->
-    <script>
-        // Data Definitions
-        const POS_KASSA = Array.from({ length: 11 }, (_, i) => ({
-            id: `kassa_${i + 1}`,
-            name: `Kassa ${i + 1}`,
-            type: 'Kassa Utama',
-            icon: 'fa-cash-register',
-            color: 'from-amber-600/20 to-orange-600/20 border-amber-500/40 text-amber-300'
-        }));
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-        const POS_COUNTER = [
-            { id: 'cnt_cis', name: 'CIS', type: 'Pos Counter', icon: 'fa-box' },
-            { id: 'cnt_rkk', name: 'RKK', type: 'Pos Counter', icon: 'fa-store' },
-            { id: 'cnt_sushi', name: 'SUSHI', type: 'Pos Counter', icon: 'fa-fish-fins' },
-            { id: 'cnt_kimbab', name: 'KIMBAB', type: 'Pos Counter', icon: 'fa-bowl-rice' },
-            { id: 'cnt_bakery', name: 'BAKERY', type: 'Pos Counter', icon: 'fa-bread-slice' },
-            { id: 'cnt_cnd', name: 'CND', type: 'Pos Counter', icon: 'fa-candy-cane' },
-            { id: 'cnt_tbboki', name: 'TBBOKI / TPOKKI', type: 'Pos Counter', icon: 'fa-pepper-hot' },
-            { id: 'cnt_dessert', name: 'DESSERT', type: 'Pos Counter', icon: 'fa-ice-cream' },
-            { id: 'cnt_world_buffet', name: 'WORLD BUFFET', type: 'Pos Counter', icon: 'fa-utensils' },
-            { id: 'cnt_chicken', name: 'CHICKEN', type: 'Pos Counter', icon: 'fa-drumstick-bite' },
-            { id: 'cnt_noodle', name: 'NODLE', type: 'Pos Counter', icon: 'fa-bowl-food' },
-            { id: 'cnt_koffea', name: 'KOFFEA', type: 'Pos Counter', icon: 'fa-mug-hot' }
-        ].map(item => ({
-            ...item,
-            color: 'from-rose-600/20 to-pink-600/20 border-rose-500/40 text-rose-300'
-        }));
+    const daftarPos = {
+        kassa: [
+            { id: 'kassa1', name: 'Kassa 1' }, { id: 'kassa2', name: 'Kassa 2' },
+            { id: 'kassa3', name: 'Kassa 3' }, { id: 'kassa4', name: 'Kassa 4' },
+            { id: 'kassa5', name: 'Kassa 5' }, { id: 'kassa6', name: 'Kassa 6' },
+            { id: 'kassa7', name: 'Kassa 7' }, { id: 'kassa8', name: 'Kassa 8' },
+            { id: 'kassa9', name: 'Kassa 9' }, { id: 'kassa10', name: 'Kassa 10' },
+            { id: 'kassa11', name: 'Kassa 11' }
+        ],
+        counter: [
+            { id: 'sushi', name: 'Sushi' }, { id: 'bakery', name: 'Bakery' },
+            { id: 'coffee', name: 'Coffee' }, { id: 'pasar_fresh', name: 'Pasar Fresh' },
+            { id: 'toko', name: 'Toko' }, { id: 'bazaar', name: 'Bazaar' }
+        ]
+    };
 
-        // State Management
-        let currentSelectedPos = null;
-        let activeCalls = [];
-        let callHistory = [];
-        let soundEnabled = true;
-        let currentTab = 'kasir';
+    let currentSelectedPos = null;
+    let activeCallsMap = {};
 
-        // Custom MP3 Audio Object
-        const ALARM_AUDIO_URL = 'https://pdftourl.net/audio/1793764075186-7516f536-daf6-4ede-bd87-0d70905bc49e.mp3';
-        const alarmAudio = new Audio(ALARM_AUDIO_URL);
-        alarmAudio.loop = true;
+    const modal = document.getElementById('modalOverlay');
+    const modalPosName = document.getElementById('modalPosName');
+    const btnConfirmCall = document.getElementById('btnConfirmCall');
+    const notif = document.getElementById('notif');
 
-        // Fallback Web Audio Synth jika MP3 terkendala koneksi
-        let audioCtx = null;
-        let synthInterval = null;
-
-        function initAudioContext() {
-            if (!audioCtx) {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (AudioContextClass) {
-                    audioCtx = new AudioContextClass();
-                }
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        // Fungsi Memutar Alarm MP3 Utama dengan Fallback
-        function startContinuousAlarm() {
-            if (activeCalls.length > 0 && soundEnabled) {
-                initAudioContext();
-                alarmAudio.play().catch(err => {
-                    console.warn("MP3 play blocked or failed, using synth fallback:", err);
-                    startSynthFallback();
-                });
-            }
-        }
-
-        function stopContinuousAlarm() {
-            try {
-                alarmAudio.pause();
-                alarmAudio.currentTime = 0;
-            } catch (e) {}
-            stopSynthFallback();
-        }
-
-        function startSynthFallback() {
-            if (!synthInterval && activeCalls.length > 0 && soundEnabled) {
-                playSynthSirene();
-                synthInterval = setInterval(() => {
-                    if (activeCalls.length > 0 && soundEnabled) {
-                        playSynthSirene();
-                    } else {
-                        stopSynthFallback();
-                    }
-                }, 400);
-            }
-        }
-
-        function stopSynthFallback() {
-            if (synthInterval) {
-                clearInterval(synthInterval);
-                synthInterval = null;
-            }
-        }
-
-        function playSynthSirene() {
-            if (!audioCtx || !soundEnabled) return;
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'sawtooth';
-                const now = audioCtx.currentTime;
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(1400, now + 0.25);
-
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start(now);
-                osc.stop(now + 0.25);
-            } catch (e) {}
-        }
-
-        // Broadcast Channel / LocalStorage Sync Setup
-        const BROADCAST_KEY = 'ALARM_SUPERVISOR_CHANNEL_EVENT';
-        const broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('pos_alarm_channel') : null;
-
-        function sendBroadcastEvent(type, payload) {
-            const data = { type, payload, timestamp: Date.now() };
-            if (broadcastChannel) {
-                broadcastChannel.postMessage(data);
-            }
-            // Fallback sync using LocalStorage Event for multi-tab support
-            localStorage.setItem(BROADCAST_KEY, JSON.stringify(data));
-        }
-
-        // Listen for events from other tabs / windows
-        if (broadcastChannel) {
-            broadcastChannel.onmessage = (event) => {
-                handleSyncEvent(event.data);
-            };
-        }
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === BROADCAST_KEY && e.newValue) {
-                try {
-                    const data = JSON.parse(e.newValue);
-                    handleSyncEvent(data);
-                } catch (err) {}
-            }
-        });
-
-        function handleSyncEvent(data) {
-            if (!data) return;
-            if (data.type === 'SYNC_CALLS') {
-                activeCalls = data.payload.activeCalls || [];
-                callHistory = data.payload.callHistory || [];
-                updateUI();
-            }
-        }
-
-        function syncDataToAllTabs() {
-            sendBroadcastEvent('SYNC_CALLS', { activeCalls, callHistory });
-            // Save state in localStorage for persistent refresh
-            localStorage.setItem('POS_ALARM_STATE', JSON.stringify({ activeCalls, callHistory }));
-        }
-
-        function loadStoredState() {
-            const saved = localStorage.getItem('POS_ALARM_STATE');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    activeCalls = parsed.activeCalls || [];
-                    callHistory = parsed.callHistory || [];
-                } catch (e) {}
-            }
-        }
-
-        // DOM Rendering Functions
-        function renderKasirButtons() {
-            const containerKassa = document.getElementById('gridKassa');
-            const containerCounter = document.getElementById('gridCounter');
-
-            containerKassa.innerHTML = POS_KASSA.map(pos => createPosButtonHtml(pos)).join('');
-            containerCounter.innerHTML = POS_COUNTER.map(pos => createPosButtonHtml(pos)).join('');
-        }
-
-        function createPosButtonHtml(pos) {
-            const isCalling = activeCalls.some(c => c.posId === pos.id);
-            const activeStyle = isCalling
-                ? 'bg-red-600 text-white border-red-500 animate-pulse-fast ring-4 ring-red-500/30'
-                : `bg-slate-800/90 hover:bg-slate-700/80 border-slate-700/80 hover:border-slate-500 text-slate-100`;
-
-            return `
-                <button onclick="promptCall('${pos.id}', '${pos.name}')" 
-                    class="${activeStyle} p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all transform active:scale-95 shadow-md relative group overflow-hidden">
-                    ${isCalling ? '<span class="absolute top-2 right-2 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span></span>' : ''}
-                    <i class="fa-solid ${pos.icon} text-2xl ${isCalling ? 'text-white' : 'text-amber-400 group-hover:scale-110 transition-transform'}"></i>
-                    <div class="text-center">
-                        <div class="font-extrabold text-sm tracking-wide">${pos.name}</div>
-                        <div class="text-[10px] ${isCalling ? 'text-white/80' : 'text-slate-400'} font-medium">${isCalling ? 'ALARM AKTIF' : pos.type}</div>
-                    </div>
-                </button>
-            `;
-        }
-
-        function renderSupervisorDashboard() {
-            const activeList = document.getElementById('activeCallsList');
-            const emptyState = document.getElementById('emptyCallsState');
-            const activeBanner = document.getElementById('activeAlarmBanner');
-            const activeBadge = document.getElementById('activeBadgeCount');
-            const activeCountTag = document.getElementById('activeCountTag');
-
-            // Badge counter update
-            activeCountTag.textContent = `${activeCalls.length} Panggilan`;
-            if (activeCalls.length > 0) {
-                activeBadge.textContent = activeCalls.length;
-                activeBadge.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-            } else {
-                activeBadge.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            }
-
-            // Banner for newest call
-            if (activeCalls.length > 0) {
-                const latest = activeCalls[0];
-                document.getElementById('activeAlarmPosName').textContent = latest.posName.toUpperCase();
-                document.getElementById('activeAlarmTime').textContent = `Dipanggil pada: ${latest.timeFormatted}`;
-                activeBanner.classList.remove('hidden');
-                startContinuousAlarm();
-            } else {
-                activeBanner.classList.add('hidden');
-                stopContinuousAlarm();
-            }
-
-            // Cards for all active calls
-            activeList.innerHTML = activeCalls.map(call => `
-                <div class="bg-slate-800 border border-red-500/50 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-lg relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center text-lg font-bold">
-                                <i class="fa-solid fa-bell animate-bounce"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-lg text-white">${call.posName}</h4>
-                                <p class="text-xs text-red-400 font-semibold flex items-center gap-1">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Bantuan Dibutuhkan
-                                </p>
-                            </div>
-                        </div>
-                        <span class="text-[11px] font-mono text-slate-400 bg-slate-900/60 px-2 py-1 rounded border border-slate-700/60">
-                            ${call.timeFormatted}
-                        </span>
-                    </div>
-
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-700/60">
-                        <span class="text-xs text-slate-400">Status: <span class="text-amber-400 font-bold">Menunggu...</span></span>
-                        <button onclick="resolveCall('${call.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-check"></i>
-                            <span>Selesai</span>
-                        </button>
-                    </div>
+    function createGrid(type) {
+        const grid = document.getElementById(type + 'Grid');
+        daftarPos[type].forEach(pos => {
+            const card = document.createElement('div');
+            card.className = 'pos-card';
+            card.id = `card-${pos.id}`;
+            
+            card.innerHTML = `
+                <div>
+                    <div class="pos-name">${pos.name}</div>
+                    <div class="pos-type">${type === 'kassa' ? 'Kassa Utama' : 'Counter Area'}</div>
                 </div>
-            `).join('');
-
-            // Render History
-            const historyContainer = document.getElementById('historyList');
-            if (callHistory.length === 0) {
-                historyContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">Belum ada riwayat panggilan.</div>`;
-            } else {
-                historyContainer.innerHTML = callHistory.slice(0, 10).map(item => `
-                    <div class="p-3 sm:px-4 flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-2 sm:gap-3">
-                            <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
-                            <span class="font-bold text-slate-200">${item.posName}</span>
-                            <span class="text-slate-500 text-[10px]">(${item.type || 'Pos'})</span>
-                        </div>
-                        <div class="flex items-center gap-4 text-slate-400 font-mono text-[11px]">
-                            <span>Dipanggil: ${item.timeFormatted}</span>
-                            <span class="text-emerald-400">Selesai: ${item.resolvedTime}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function updateUI() {
-            renderKasirButtons();
-            renderSupervisorDashboard();
-        }
-
-        // User Action Handlers
-        function promptCall(posId, posName) {
-            initAudioContext();
-            currentSelectedPos = { id: posId, name: posName };
-            document.getElementById('modalPosTitle').textContent = posName;
-            document.getElementById('confirmModal').classList.remove('hidden');
-            document.getElementById('confirmModal').classList.add('flex');
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            document.getElementById('confirmModal').classList.remove('flex');
-            currentSelectedPos = null;
-        }
-
-        function executeCall() {
-            if (!currentSelectedPos || !currentSelectedPos.id) return;
-
-            const now = new Date();
-            const timeFormatted = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const selectedPosCopy = { ...currentSelectedPos };
-
-            // Check if already active
-            const existingIndex = activeCalls.findIndex(c => c.posId === selectedPosCopy.id);
-            if (existingIndex === -1) {
-                const callObject = {
-                    id: 'call_' + Date.now(),
-                    posId: selectedPosCopy.id,
-                    posName: selectedPosCopy.name,
-                    timestamp: Date.now(),
-                    timeFormatted: timeFormatted
-                };
-                activeCalls.unshift(callObject);
-                syncDataToAllTabs();
-            }
-
-            closeConfirmModal();
-
-            // Show Toast Notif in Kasir View
-            const notif = document.getElementById('kasirNotification');
-            document.getElementById('kasirNotifTitle').textContent = `Panggilan ${selectedPosCopy.name} Terkirim!`;
-            document.getElementById('kasirNotifDesc').textContent = `Alarm berbunyi pada dashboard supervisor. Mohon tunggu.`;
-            notif.classList.remove('hidden');
-
-            setTimeout(() => {
-                notif.classList.add('hidden');
-            }, 6000);
-        }
-
-        function dismissKasirNotif() {
-            document.getElementById('kasirNotification').classList.add('hidden');
-        }
-
-        function resolveCall(callId) {
-            const index = activeCalls.findIndex(c => c.id === callId);
-            if (index !== -1) {
-                const resolvedCall = activeCalls.splice(index, 1)[0];
-                const now = new Date();
-                resolvedCall.resolvedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                callHistory.unshift(resolvedCall);
-                syncDataToAllTabs();
-            }
-        }
-
-        function acknowledgeLatestCall() {
-            if (activeCalls.length > 0) {
-                resolveCall(activeCalls[0].id);
-            }
-        }
-
-        function clearAllCalls() {
-            if (activeCalls.length === 0) return;
-            activeCalls.forEach(c => {
-                const now = new Date();
-                c.resolvedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                callHistory.unshift(c);
-            });
-            activeCalls = [];
-            syncDataToAllTabs();
-        }
-
-        function clearHistory() {
-            callHistory = [];
-            syncDataToAllTabs();
-        }
-
-        function toggleAudioState() {
-            initAudioContext();
-            soundEnabled = !soundEnabled;
-            const soundIcon = document.getElementById('soundIcon');
-            const soundText = document.getElementById('soundText');
-
-            if (soundEnabled) {
-                soundIcon.className = 'fa-solid fa-volume-high text-emerald-400';
-                soundText.textContent = 'Suara Alarm: AKTIF';
-                if (activeCalls.length > 0) startContinuousAlarm();
-            } else {
-                soundIcon.className = 'fa-solid fa-volume-xmark text-red-400';
-                soundText.textContent = 'Suara Alarm: MUTED';
-                stopContinuousAlarm();
-            }
-        }
-
-        function switchTab(tab) {
-            initAudioContext();
-            currentTab = tab;
-            const viewKasir = document.getElementById('viewKasir');
-            const viewSupervisor = document.getElementById('viewSupervisor');
-            const btnKasir = document.getElementById('btnTabKasir');
-            const btnSupervisor = document.getElementById('btnTabSupervisor');
-
-            if (tab === 'kasir') {
-                viewKasir.classList.remove('hidden');
-                viewKasir.classList.add('flex');
-                viewSupervisor.classList.add('hidden');
-                viewSupervisor.classList.remove('flex');
-
-                btnKasir.className = 'flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-white bg-slate-700 shadow';
-                btnSupervisor.className = 'flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-slate-400 hover:text-slate-200 relative';
-            } else {
-                viewKasir.classList.add('hidden');
-                viewKasir.classList.remove('flex');
-                viewSupervisor.classList.remove('hidden');
-                viewSupervisor.classList.flex = 'flex';
-
-                btnSupervisor.className = 'flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-white bg-slate-700 shadow relative';
-                btnKasir.className = 'flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 text-slate-400 hover:text-slate-200';
-            }
-        }
-
-        // Initialize App on DOM Ready
-        window.addEventListener('DOMContentLoaded', () => {
-            loadStoredState();
-            updateUI();
-
-            // Unlock Audio pada sentuhan pertama di layar
-            const unlockAudioHandler = () => {
-                initAudioContext();
-                document.removeEventListener('click', unlockAudioHandler);
-                document.removeEventListener('touchstart', unlockAudioHandler);
-            };
-            document.addEventListener('click', unlockAudioHandler);
-            document.addEventListener('touchstart', unlockAudioHandler);
+                <div>
+                    <button class="btn-panggil" id="btn-panggil-${pos.id}" onclick="promptCall('${pos.id}', '${pos.name}')">Panggil</button>
+                    <button class="btn-batal-pos" id="btn-batal-${pos.id}" onclick="cancelCallFromKasir('${pos.id}')">Batalkan</button>
+                </div>
+            `;
+            grid.appendChild(card);
         });
-    </script>
+    }
+
+    function promptCall(posId, posName) {
+        currentSelectedPos = { id: posId, name: posName };
+        modalPosName.innerText = posName;
+        modal.classList.add('open');
+    }
+
+    function closeModal() {
+        modal.classList.remove('open');
+        currentSelectedPos = null;
+    }
+
+    btnConfirmCall.onclick = function() {
+        if (!currentSelectedPos) return;
+        
+        const callData = {
+            posId: currentSelectedPos.id,
+            posName: currentSelectedPos.name,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            status: 'active'
+        };
+
+        database.ref('panggilan').push(callData)
+            .then(() => {
+                showNotification("Panggilan Terkirim ke Supervisor!");
+                closeModal();
+            })
+            .catch((error) => {
+                alert('Gagal mengirim panggilan. Periksa koneksi.');
+                console.error(error);
+                closeModal();
+            });
+    };
+
+    function cancelCallFromKasir(posId) {
+        const firebaseKey = activeCallsMap[posId];
+        if (firebaseKey) {
+            database.ref(`panggilan/${firebaseKey}`).update({
+                status: 'cancelled',
+                cancelledAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                showNotification("Panggilan dibatalkan.");
+            });
+        }
+    }
+
+    function showNotification(text) {
+        notif.innerText = text;
+        notif.style.display = 'block';
+        setTimeout(() => notif.style.display = 'none', 3000);
+    }
+
+    function listenToCallStatus() {
+        database.ref('panggilan').on('value', (snapshot) => {
+            document.querySelectorAll('.pos-card').forEach(card => card.classList.remove('calling'));
+            activeCallsMap = {};
+
+            snapshot.forEach((childSnapshot) => {
+                const key = childSnapshot.key;
+                const call = childSnapshot.val();
+
+                if (call.status === 'active') {
+                    activeCallsMap[call.posId] = key;
+                    const card = document.getElementById(`card-${call.posId}`);
+                    if (card) {
+                        card.classList.add('calling');
+                    }
+                }
+            });
+        });
+    }
+
+    createGrid('kassa');
+    createGrid('counter');
+    listenToCallStatus();
+</script>
+
 </body>
 </html>
