@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Panggil Alarm - Kasir</title>
 
+    <!-- PWA & Mobile Optimization -->
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
-    <link rel="apple-touch-icon" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
     <link rel="manifest" href='data:application/manifest+json,{"name":"Panggil Alarm Kasir","short_name":"PanggilAlarm","start_url":".","display":"standalone","background_color":"%23f8fafc","theme_color":"%234f46e5","icons":[{"src":"https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 
+    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
@@ -44,7 +46,6 @@
         header { background: var(--card-bg); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e2e8f0; }
         header h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
         
-        /* Indikator Supervisor Online di Header */
         .supervisor-status-badge { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; }
         .supervisor-status-badge.offline { background: #fee2e2; color: #991b1b; }
         .supervisor-status-badge.online { background: #dcfce7; color: #166534; }
@@ -190,7 +191,7 @@
             applyLoginState();
         }
         codePinInput.focus();
-        listenToSupervisorStatus(); // Mulai memantau supervisor online/offline
+        listenToSupervisorStatus();
     };
 
     codePinInput.addEventListener('keypress', function (e) {
@@ -224,7 +225,6 @@
         location.reload();
     }
 
-    // Memantau jumlah Supervisor yang sedang online secara real-time
     function listenToSupervisorStatus() {
         database.ref('status_supervisor').on('value', (snapshot) => {
             const count = snapshot.numChildren();
@@ -301,4 +301,4 @@
 </script>
 
 </body>
-</html>
+    </html>
