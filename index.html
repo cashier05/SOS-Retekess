@@ -7,12 +7,12 @@
 
     <!-- PWA & Mobile Optimization -->
     <meta name="theme-color" content="#2c3e50">
-    <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png" type="image/png">
+    <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
     <link rel="shortcut icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
     <link rel="apple-touch-icon" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png" type="image/png">
     
     <!-- Manifest inline: agar Android/iOS pakai ikon ini saat dibuat pintasan / diinstall -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Panggil Alarm Kasir","short_name":"PanggilAlarm","start_url":".","display":"standalone","background_color":"%23ecf0f1","theme_color":"%232c3e50","icons":[{"src":"https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png","purpose":"any maskable"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Panggil Alarm Kasir","short_name":"PanggilAlarm","start_url":".","display":"standalone","background_color":"%23ecf0f1","theme_color":"%232c3e50","icons":[{"src":"https://pdftourl.net/images/1790938008786-593b08f1-6a66-4aae-b037-0fbfc3160abf.jpeg","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 
     <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -270,6 +270,7 @@
                 const key = childSnapshot.key;
                 const call = childSnapshot.val();
 
+                // Memeriksa panggilan aktif untuk pos yang sedang login
                 if (call.status === 'active' && call.posId === currentPos.id) {
                     isCalling = true;
                     currentActiveFirebaseKey = key;
@@ -283,6 +284,7 @@
                 posPanel.classList.add('calling');
                 displayPosType.innerText = "🚨 STATUS: MEMANGGIL SUPERVISOR...";
                 
+                // Menampilkan kotak pesan balasan jika supervisor sudah mengirim note
                 if (noteFromSuper) {
                     replyBox.style.display = 'block';
                     replyText.innerText = noteFromSuper;
