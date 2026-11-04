@@ -15,53 +15,54 @@
             --text: #333;
             --danger: #e74c3c;
             --success: #2ecc71;
+            --info: #2980b9;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
 
-        header { background-color: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        header h1 { font-size: 1.2rem; }
-        header p { font-size: 0.8rem; opacity: 0.8; margin-top: 4px; }
+        /* Login Screen */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; transition: opacity 0.5s; }
+        #loginScreen.hide { opacity: 0; pointer-events: none; }
+        .login-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 380px; }
+        .login-box h2 { margin-bottom: 8px; color: var(--primary); font-size: 1.5rem; }
+        .login-box p { color: #7f8c8d; margin-bottom: 15px; font-size: 0.85rem; }
+        .login-box input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.2rem; text-align: center; letter-spacing: 3px; }
+        .login-box input:focus { border-color: var(--accent); outline: none; }
+        .login-box button { width: 100%; padding: 14px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .pos-list-hint { font-size: 0.72rem; color: #7f8c8d; margin-top: 12px; line-height: 1.35; max-height: 130px; overflow-y: auto; text-align: left; padding: 6px; background: #f9f9f9; border-radius: 5px; border: 1px solid #eee; }
 
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
+        /* Main Dashboard Kasir */
+        header { background-color: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.1rem; }
+        header p { font-size: 0.75rem; opacity: 0.8; }
+        .btn-logout { background: rgba(255,255,255,0.2); border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
 
-        .section-title { font-size: 0.9rem; font-weight: bold; color: var(--primary); margin: 15px 0 10px 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; }
+        .container.active { display: block; }
 
-        .pos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        @media (min-width: 600px) { .pos-grid { grid-template-columns: repeat(3, 1fr); } }
+        /* Active Pos Calling Card */
+        .active-pos-panel { background: white; border-radius: 15px; padding: 25px 20px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.08); margin-top: 20px; border: 2px solid #ddd; }
+        .active-pos-panel h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; }
+        .active-pos-panel p { font-size: 0.85rem; color: #7f8c8d; text-transform: uppercase; margin-bottom: 20px; }
 
-        .pos-card { background: white; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.1s, box-shadow 0.2s; border: 2px solid transparent; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; }
-        .pos-card:active { transform: scale(0.97); }
-        .pos-card.selected { border-color: var(--accent); background-color: #fffdf2; }
+        /* Reply Note Box from Supervisor */
+        .reply-box { display: none; background: #ebf5fb; border: 2px solid var(--info); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center; animation: fadeIn 0.4s; }
+        .reply-box h4 { color: var(--info); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
+        .reply-box p { color: #2c3e50; font-size: 1.1rem; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .pos-name { font-size: 1.3rem; font-weight: bold; color: var(--primary); margin-bottom: 2px; }
-        .pos-type { font-size: 0.65rem; color: #7f8c8d; text-transform: uppercase; margin-bottom: 8px; }
-
-        .btn-panggil { background-color: #bdc3c7; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; width: 100%; text-transform: uppercase; cursor: pointer; }
-        .pos-card.selected .btn-panggil { background-color: var(--success); }
+        .btn-main-call { width: 100%; padding: 20px; background-color: var(--success); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); transition: transform 0.1s; }
+        .btn-main-call:active { transform: scale(0.98); }
 
         /* Status Calling */
-        .pos-card.calling { animation: pulseDanger 1s infinite; border-color: var(--danger); background-color: #fff5f5; }
-        .pos-card.calling .btn-panggil { display: none; }
+        .active-pos-panel.calling { animation: pulseDanger 1s infinite; border-color: var(--danger); background-color: #fff5f5; }
+        .active-pos-panel.calling .btn-main-call { display: none; }
         
-        .btn-batal-pos { background-color: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 0.75rem; width: 100%; text-transform: uppercase; cursor: pointer; display: none; }
-        .pos-card.calling .btn-batal-pos { display: block; background-color: var(--danger); }
+        .btn-main-batal { width: 100%; padding: 20px; background-color: var(--danger); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .active-pos-panel.calling .btn-main-batal { display: block; }
 
-        @keyframes pulseDanger { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; padding: 20px; }
-        .modal-overlay.open { display: flex; opacity: 1; }
-        .modal { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s; }
-        .modal-overlay.open .modal { transform: translateY(0); }
-        .modal h2 { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; }
-        .modal p { font-size: 1rem; color: #7f8c8d; margin-bottom: 25px; }
-        
-        .modal-buttons { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-cancel { background-color: #bdc3c7; color: var(--primary); }
-        .btn-confirm { background-color: var(--success); color: white; }
+        @keyframes pulseDanger { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
 
         /* Notification */
         #notif { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 25px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-weight: bold; display: none; z-index: 2000; font-size: 0.9rem; }
@@ -69,32 +70,53 @@
 </head>
 <body>
 
-<header>
-    <h1>Menu Kasir</h1>
-    <p>Sistem Panggil Alarm (Supervisor)</p>
-</header>
-
-<div class="container">
-    <div class="section-title">Pos Kassa Utama</div>
-    <div class="pos-grid" id="kassaGrid"></div>
-
-    <div class="section-title">Pos Counter</div>
-    <div class="pos-grid" id="counterGrid"></div>
-</div>
-
-<div id="notif">Notifikasi</div>
-
-<!-- Modal Konfirmasi -->
-<div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-        <h2>Konfirmasi</h2>
-        <p>Apakah Anda yakin ingin memanggil Supervisor ke <strong id="modalPosName">Pos X</strong>?</p>
-        <div class="modal-buttons">
-            <button class="btn btn-cancel" onclick="closeModal()">Batal</button>
-            <button class="btn btn-confirm" id="btnConfirmCall">KIRIM ALARM</button>
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="login-box">
+        <h2>Login Kasir / Pos</h2>
+        <p>Masukkan Kode Akses Pos Anda</p>
+        <input type="password" id="codePinInput" placeholder="Contoh: 2101" maxlength="4" inputmode="numeric">
+        <button onclick="checkLoginCode()">Masuk Pos</button>
+        
+        <div class="pos-list-hint">
+            <strong>Daftar Kode Pos:</strong><br>
+            2101-2110: Kassa 1 - 10 | 2111: Pos Rokok<br>
+            2119: CIS | 4111: TPOKI | 4112: NOODLE<br>
+            4113: CHICKEN | 4114: DESSERT | 4115: BUFFET<br>
+            4116: SUSHI | 4117: BAKERY | 4118: KOFFEA<br>
+            4119: CND | 2133: KIMBAB
         </div>
     </div>
 </div>
+
+<!-- Main Kasir Panel -->
+<div id="mainApp">
+    <header>
+        <div>
+            <h1 id="headerPosName">Pos Kasir</h1>
+            <p>Sistem Panggil Alarm</p>
+        </div>
+        <button class="btn-logout" onclick="logoutPos()">Logout</button>
+    </header>
+
+    <div class="container active" id="kasirContainer">
+        <div class="active-pos-panel" id="posPanel">
+            <h2 id="displayPosName">-</h2>
+            <p id="displayPosType">Silakan tekan tombol di bawah untuk memanggil Supervisor</p>
+
+            <!-- Kotak Pesan Balasan Supervisor -->
+            <div class="reply-box" id="replyBox">
+                <h4>💬 Pesan Balasan Supervisor:</h4>
+                <p id="replyText">-</p>
+            </div>
+            
+            <button class="btn-main-call" onclick="sendCall()">Panggil Supervisor</button>
+            <button class="btn-main-batal" onclick="cancelCall()">Batalkan Panggilan</button>
+        </div>
+    </div>
+</div>
+
+<div id="notif">Notifikasi</div>
 
 <script>
     const firebaseConfig = {
@@ -111,68 +133,91 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    const daftarPos = {
-        kassa: [
-            { id: 'kassa1', name: 'Kassa 1' }, { id: 'kassa2', name: 'Kassa 2' },
-            { id: 'kassa3', name: 'Kassa 3' }, { id: 'kassa4', name: 'Kassa 4' },
-            { id: 'kassa5', name: 'Kassa 5' }, { id: 'kassa6', name: 'Kassa 6' },
-            { id: 'kassa7', name: 'Kassa 7' }, { id: 'kassa8', name: 'Kassa 8' },
-            { id: 'kassa9', name: 'Kassa 9' }, { id: 'kassa10', name: 'Kassa 10' },
-            { id: 'kassa11', name: 'Kassa 11' }
-        ],
-        counter: [
-            { id: 'sushi', name: 'Sushi' }, { id: 'bakery', name: 'Bakery' },
-            { id: 'coffee', name: 'Coffee' }, { id: 'pasar_fresh', name: 'Pasar Fresh' },
-            { id: 'toko', name: 'Toko' }, { id: 'bazaar', name: 'Bazaar' }
-        ]
+    const posDatabase = {
+        "2101": { id: "kassa1", name: "Kassa 1", type: "Kassa Utama" },
+        "2102": { id: "kassa2", name: "Kassa 2", type: "Kassa Utama" },
+        "2103": { id: "kassa3", name: "Kassa 3", type: "Kassa Utama" },
+        "2104": { id: "kassa4", name: "Kassa 4", type: "Kassa Utama" },
+        "2105": { id: "kassa5", name: "Kassa 5", type: "Kassa Utama" },
+        "2106": { id: "kassa6", name: "Kassa 6", type: "Kassa Utama" },
+        "2107": { id: "kassa7", name: "Kassa 7", type: "Kassa Utama" },
+        "2108": { id: "kassa8", name: "Kassa 8", type: "Kassa Utama" },
+        "2109": { id: "kassa9", name: "Kassa 9", type: "Kassa Utama" },
+        "2110": { id: "kassa10", name: "Kassa 10", type: "Kassa Utama" },
+        "2111": { id: "pos_rokok", name: "Pos Rokok", type: "Counter Area" },
+        "2119": { id: "cis", name: "CIS", type: "Counter Area" },
+        "4111": { id: "tpoki", name: "TPOKI", type: "Counter Area" },
+        "4112": { id: "noodle", name: "NOODLE", type: "Counter Area" },
+        "4113": { id: "chicken", name: "CHICKEN", type: "Counter Area" },
+        "4114": { id: "dessert", name: "DESSERT", type: "Counter Area" },
+        "4115": { id: "wold_buffet", name: "WOLD BUFFET", type: "Counter Area" },
+        "4116": { id: "sushi", name: "SUSHI", type: "Counter Area" },
+        "4117": { id: "bakery", name: "BAKERY", type: "Counter Area" },
+        "4118": { id: "koffea", name: "KOFFEA", type: "Counter Area" },
+        "4119": { id: "cnd", name: "CND", type: "Counter Area" },
+        "2133": { id: "kimbab", name: "KIMBAB", type: "Counter Area" }
     };
 
-    let currentSelectedPos = null;
-    let activeCallsMap = {};
+    let currentPos = null;
+    let currentActiveFirebaseKey = null;
 
-    const modal = document.getElementById('modalOverlay');
-    const modalPosName = document.getElementById('modalPosName');
-    const btnConfirmCall = document.getElementById('btnConfirmCall');
+    const loginScreen = document.getElementById('loginScreen');
+    const codePinInput = document.getElementById('codePinInput');
+    const headerPosName = document.getElementById('headerPosName');
+    const displayPosName = document.getElementById('displayPosName');
+    const displayPosType = document.getElementById('displayPosType');
+    const posPanel = document.getElementById('posPanel');
+    const replyBox = document.getElementById('replyBox');
+    const replyText = document.getElementById('replyText');
     const notif = document.getElementById('notif');
 
-    function createGrid(type) {
-        const grid = document.getElementById(type + 'Grid');
-        daftarPos[type].forEach(pos => {
-            const card = document.createElement('div');
-            card.className = 'pos-card';
-            card.id = `card-${pos.id}`;
-            
-            card.innerHTML = `
-                <div>
-                    <div class="pos-name">${pos.name}</div>
-                    <div class="pos-type">${type === 'kassa' ? 'Kassa Utama' : 'Counter Area'}</div>
-                </div>
-                <div>
-                    <button class="btn-panggil" id="btn-panggil-${pos.id}" onclick="promptCall('${pos.id}', '${pos.name}')">Panggil</button>
-                    <button class="btn-batal-pos" id="btn-batal-${pos.id}" onclick="cancelCallFromKasir('${pos.id}')">Batalkan</button>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
+    window.onload = function() {
+        const savedPosCode = localStorage.getItem('kasirPosCode');
+        if (savedPosCode && posDatabase[savedPosCode]) {
+            currentPos = posDatabase[savedPosCode];
+            applyLoginState();
+        }
+        codePinInput.focus();
+    };
+
+    codePinInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') checkLoginCode();
+    });
+
+    function checkLoginCode() {
+        const code = codePinInput.value.trim();
+        if (posDatabase[code]) {
+            currentPos = posDatabase[code];
+            localStorage.setItem('kasirPosCode', code);
+            applyLoginState();
+        } else {
+            alert("Kode Pos Salah! Periksa kembali daftar kode.");
+            codePinInput.value = "";
+            codePinInput.focus();
+        }
     }
 
-    function promptCall(posId, posName) {
-        currentSelectedPos = { id: posId, name: posName };
-        modalPosName.innerText = posName;
-        modal.classList.add('open');
-    }
-
-    function closeModal() {
-        modal.classList.remove('open');
-        currentSelectedPos = null;
-    }
-
-    btnConfirmCall.onclick = function() {
-        if (!currentSelectedPos) return;
+    function applyLoginState() {
+        loginScreen.classList.add('hide');
+        document.getElementById('kasirContainer').classList.add('active');
+        headerPosName.innerText = currentPos.name;
+        displayPosName.innerText = currentPos.name;
+        displayPosType.innerText = currentPos.type;
         
+        listenToMyPosStatus();
+    }
+
+    function logoutPos() {
+        localStorage.removeItem('kasirPosCode');
+        location.reload();
+    }
+
+    function sendCall() {
+        if (!currentPos) return;
+
         const callData = {
-            posId: currentSelectedPos.id,
-            posName: currentSelectedPos.name,
+            posId: currentPos.id,
+            posName: currentPos.name,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             status: 'active'
         };
@@ -180,19 +225,16 @@
         database.ref('panggilan').push(callData)
             .then(() => {
                 showNotification("Panggilan Terkirim ke Supervisor!");
-                closeModal();
             })
             .catch((error) => {
                 alert('Gagal mengirim panggilan. Periksa koneksi.');
                 console.error(error);
-                closeModal();
             });
-    };
+    }
 
-    function cancelCallFromKasir(posId) {
-        const firebaseKey = activeCallsMap[posId];
-        if (firebaseKey) {
-            database.ref(`panggilan/${firebaseKey}`).update({
+    function cancelCall() {
+        if (currentActiveFirebaseKey) {
+            database.ref(`panggilan/${currentActiveFirebaseKey}`).update({
                 status: 'cancelled',
                 cancelledAt: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
@@ -207,29 +249,42 @@
         setTimeout(() => notif.style.display = 'none', 3000);
     }
 
-    function listenToCallStatus() {
+    function listenToMyPosStatus() {
         database.ref('panggilan').on('value', (snapshot) => {
-            document.querySelectorAll('.pos-card').forEach(card => card.classList.remove('calling'));
-            activeCallsMap = {};
+            let isCalling = false;
+            let noteFromSuper = "";
+            currentActiveFirebaseKey = null;
 
             snapshot.forEach((childSnapshot) => {
                 const key = childSnapshot.key;
                 const call = childSnapshot.val();
 
-                if (call.status === 'active') {
-                    activeCallsMap[call.posId] = key;
-                    const card = document.getElementById(`card-${call.posId}`);
-                    if (card) {
-                        card.classList.add('calling');
+                if (call.status === 'active' && call.posId === currentPos.id) {
+                    isCalling = true;
+                    currentActiveFirebaseKey = key;
+                    if (call.replyNote) {
+                        noteFromSuper = call.replyNote;
                     }
                 }
             });
+
+            if (isCalling) {
+                posPanel.classList.add('calling');
+                displayPosType.innerText = "🚨 STATUS: MEMANGGIL SUPERVISOR...";
+                
+                if (noteFromSuper) {
+                    replyBox.style.display = 'block';
+                    replyText.innerText = noteFromSuper;
+                } else {
+                    replyBox.style.display = 'none';
+                }
+            } else {
+                posPanel.classList.remove('calling');
+                displayPosType.innerText = currentPos.type;
+                replyBox.style.display = 'none';
+            }
         });
     }
-
-    createGrid('kassa');
-    createGrid('counter');
-    listenToCallStatus();
 </script>
 
 </body>
