@@ -5,89 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Panggil Alarm - Kasir</title>
 
-    <!-- PWA & Mobile Optimization -->
-    <meta name="theme-color" content="#2c3e50">
+    <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
-    <link rel="shortcut icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
     <link rel="apple-touch-icon" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png" type="image/png">
-    
-    <!-- Manifest inline: agar Android/iOS pakai ikon ini saat dibuat pintasan / diinstall -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Panggil Alarm Kasir","short_name":"PanggilAlarm","start_url":".","display":"standalone","background_color":"%23ecf0f1","theme_color":"%232c3e50","icons":[{"src":"https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Panggil Alarm Kasir","short_name":"PanggilAlarm","start_url":".","display":"standalone","background_color":"%23f8fafc","theme_color":"%234f46e5","icons":[{"src":"https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 
-    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #f1c40f;
-            --bg: #ecf0f1;
-            --text: #333;
-            --danger: #e74c3c;
-            --success: #2ecc71;
-            --info: #2980b9;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --info: #0ea5e9;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-        /* Login Screen */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; transition: opacity 0.5s; }
+        #loginScreen { position: fixed; inset: 0; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; transition: opacity 0.4s ease; }
         #loginScreen.hide { opacity: 0; pointer-events: none; }
-        .login-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 380px; }
-        .login-box h2 { margin-bottom: 8px; color: var(--primary); font-size: 1.5rem; }
-        .login-box p { color: #7f8c8d; margin-bottom: 15px; font-size: 0.85rem; }
-        .login-box input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.2rem; text-align: center; letter-spacing: 3px; }
-        .login-box input:focus { border-color: var(--accent); outline: none; }
-        .login-box button { width: 100%; padding: 14px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .pos-list-hint { font-size: 0.72rem; color: #7f8c8d; margin-top: 12px; line-height: 1.35; max-height: 130px; overflow-y: auto; text-align: left; padding: 6px; background: #f9f9f9; border-radius: 5px; border: 1px solid #eee; }
-
-        /* Main Dashboard Kasir */
-        header { background-color: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        header h1 { font-size: 1.1rem; }
-        header p { font-size: 0.75rem; opacity: 0.8; }
-        .btn-logout { background: rgba(255,255,255,0.2); border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
-
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; }
-        .container.active { display: block; }
-
-        /* Active Pos Calling Card */
-        .active-pos-panel { background: white; border-radius: 15px; padding: 25px 20px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.08); margin-top: 20px; border: 2px solid #ddd; }
-        .active-pos-panel h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; }
-        .active-pos-panel p { font-size: 0.85rem; color: #7f8c8d; text-transform: uppercase; margin-bottom: 20px; }
-
-        /* Reply Box from Supervisor */
-        .reply-box { display: none; background: #ebf5fb; border: 2px solid var(--info); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center; animation: fadeIn 0.4s; }
-        .reply-box h4 { color: var(--info); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
-        .reply-box p { color: #2c3e50; font-size: 1.1rem; font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .btn-main-call { width: 100%; padding: 20px; background-color: var(--success); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); transition: transform 0.1s; }
-        .btn-main-call:active { transform: scale(0.98); }
-
-        /* Status Calling */
-        .active-pos-panel.calling { animation: pulseDanger 1s infinite; border-color: var(--danger); background-color: #fff5f5; }
-        .active-pos-panel.calling .btn-main-call { display: none; }
+        .login-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 35px 25px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 400px; }
+        .login-card h2 { color: var(--text); font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
+        .login-card p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 24px; }
+        .login-card input { width: 100%; padding: 16px; margin-bottom: 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 1.4rem; text-align: center; letter-spacing: 6px; font-weight: 700; background: #f8fafc; transition: all 0.2s; }
+        .login-card input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        .login-card button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .login-card button:hover { background: var(--primary-dark); }
         
-        .btn-main-batal { width: 100%; padding: 20px; background-color: var(--danger); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; display: none; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
-        .active-pos-panel.calling .btn-main-batal { display: block; }
+        .pos-list-hint { font-size: 0.75rem; color: var(--text-light); margin-top: 18px; line-height: 1.5; max-height: 140px; overflow-y: auto; text-align: left; padding: 10px; background: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0; }
 
-        @keyframes pulseDanger { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+        header { background: var(--card-bg); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #e2e8f0; }
+        header h1 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+        
+        /* Indikator Supervisor Online di Header */
+        .supervisor-status-badge { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; }
+        .supervisor-status-badge.offline { background: #fee2e2; color: #991b1b; }
+        .supervisor-status-badge.online { background: #dcfce7; color: #166534; }
 
-        /* Notification */
-        #notif { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 25px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-weight: bold; display: none; z-index: 2000; font-size: 0.9rem; }
+        .btn-logout { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 10px; color: var(--text-light); cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; }
+        .btn-logout:hover { background: #e2e8f0; color: var(--text); }
+
+        .container { padding: 24px 16px; max-width: 500px; margin: auto; width: 100%; flex: 1; display: none; align-items: center; }
+        .container.active { display: flex; flex-direction: column; justify-content: center; }
+
+        .pos-panel { background: var(--card-bg); border-radius: 24px; padding: 36px 24px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; width: 100%; position: relative; overflow: hidden; }
+        .pos-panel h2 { font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+        .pos-panel .pos-type-badge { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 24px; }
+
+        .reply-box { display: none; background: #f0fdf4; border: 2px solid var(--success); border-radius: 16px; padding: 18px; margin-bottom: 24px; text-align: left; animation: slideDown 0.3s ease; }
+        .reply-box h4 { color: #166534; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .reply-box p { color: #14532d; font-size: 1.05rem; font-weight: 600; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-main { width: 100%; padding: 20px; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-call { background: var(--success); color: white; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+        .btn-call:hover { background: #059669; }
+
+        .pos-panel.calling { border-color: var(--danger); background: #fef2f2; animation: borderPulse 1.5s infinite; }
+        .pos-panel.calling .btn-call { display: none; }
+        
+        .btn-cancel { background: var(--danger); color: white; display: none; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); }
+        .btn-cancel:hover { background: #dc2626; }
+        .pos-panel.calling .btn-cancel { display: block; }
+
+        @keyframes borderPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        #notif { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: white; padding: 14px 28px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-weight: 700; font-size: 0.9rem; z-index: 3000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #notif.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-<!-- Login Screen -->
 <div id="loginScreen">
-    <div class="login-box">
-        <h2>Login Kasir / Pos</h2>
-        <p>Masukkan Kode Akses Pos Anda</p>
-        <input type="password" id="codePinInput" placeholder="Contoh: 2101" maxlength="4" inputmode="numeric">
-        <button onclick="checkLoginCode()">Masuk Pos</button>
+    <div class="login-card">
+        <h2>Login Pos Kasir</h2>
+        <p>Masukkan 4 digit kode akses pos Anda</p>
+        <input type="password" id="codePinInput" placeholder="••••" maxlength="4" inputmode="numeric">
+        <button onclick="checkLoginCode()">Masuk Aplikasi</button>
         
         <div class="pos-list-hint">
             <strong>Daftar Kode Pos:</strong><br>
@@ -100,29 +102,27 @@
     </div>
 </div>
 
-<!-- Main Kasir Panel -->
-<div id="mainApp">
+<div id="mainApp" style="display:contents;">
     <header>
         <div>
             <h1 id="headerPosName">Pos Kasir</h1>
-            <p>Sistem Panggil Alarm</p>
+            <div id="superStatusBadge" class="supervisor-status-badge offline">🔴 Mengecek status...</div>
         </div>
-        <button class="btn-logout" onclick="logoutPos()">Logout</button>
+        <button class="btn-logout" onclick="logoutPos()">Ganti Pos</button>
     </header>
 
-    <div class="container active" id="kasirContainer">
-        <div class="active-pos-panel" id="posPanel">
+    <div class="container" id="kasirContainer">
+        <div class="pos-panel" id="posPanel">
             <h2 id="displayPosName">-</h2>
-            <p id="displayPosType">Silakan tekan tombol di bawah untuk memanggil Supervisor</p>
+            <div class="pos-type-badge" id="displayPosType">Memuat...</div>
 
-            <!-- Kotak Pesan Balasan Supervisor -->
             <div class="reply-box" id="replyBox">
-                <h4>💬 Pesan Balasan Supervisor:</h4>
+                <h4>💬 Pesan dari Supervisor:</h4>
                 <p id="replyText">-</p>
             </div>
             
-            <button class="btn-main-call" onclick="sendCall()">Panggil Supervisor</button>
-            <button class="btn-main-batal" onclick="cancelCall()">Batalkan Panggilan</button>
+            <button class="btn-main btn-call" onclick="sendCall()">Panggil Supervisor</button>
+            <button class="btn-main btn-cancel" onclick="cancelCall()">Batalkan Panggilan</button>
         </div>
     </div>
 </div>
@@ -181,6 +181,7 @@
     const replyBox = document.getElementById('replyBox');
     const replyText = document.getElementById('replyText');
     const notif = document.getElementById('notif');
+    const superStatusBadge = document.getElementById('superStatusBadge');
 
     window.onload = function() {
         const savedPosCode = localStorage.getItem('kasirPosCode');
@@ -189,6 +190,7 @@
             applyLoginState();
         }
         codePinInput.focus();
+        listenToSupervisorStatus(); // Mulai memantau supervisor online/offline
     };
 
     codePinInput.addEventListener('keypress', function (e) {
@@ -202,7 +204,7 @@
             localStorage.setItem('kasirPosCode', code);
             applyLoginState();
         } else {
-            alert("Kode Pos Salah! Periksa kembali daftar kode.");
+            showNotification("Kode Pos Salah!");
             codePinInput.value = "";
             codePinInput.focus();
         }
@@ -214,7 +216,6 @@
         headerPosName.innerText = currentPos.name;
         displayPosName.innerText = currentPos.name;
         displayPosType.innerText = currentPos.type;
-        
         listenToMyPosStatus();
     }
 
@@ -223,24 +224,31 @@
         location.reload();
     }
 
+    // Memantau jumlah Supervisor yang sedang online secara real-time
+    function listenToSupervisorStatus() {
+        database.ref('status_supervisor').on('value', (snapshot) => {
+            const count = snapshot.numChildren();
+            if (count > 0) {
+                superStatusBadge.className = "supervisor-status-badge online";
+                superStatusBadge.innerText = `🟢 ${count} Supervisor Online`;
+            } else {
+                superStatusBadge.className = "supervisor-status-badge offline";
+                superStatusBadge.innerText = "🔴 Supervisor Offline";
+            }
+        });
+    }
+
     function sendCall() {
         if (!currentPos) return;
-
         const callData = {
             posId: currentPos.id,
             posName: currentPos.name,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             status: 'active'
         };
-
         database.ref('panggilan').push(callData)
-            .then(() => {
-                showNotification("Panggilan Terkirim ke Supervisor!");
-            })
-            .catch((error) => {
-                alert('Gagal mengirim panggilan. Periksa koneksi.');
-                console.error(error);
-            });
+            .then(() => showNotification("Panggilan terkirim ke Supervisor!"))
+            .catch(() => showNotification("Gagal mengirim panggilan."));
     }
 
     function cancelCall() {
@@ -248,16 +256,14 @@
             database.ref(`panggilan/${currentActiveFirebaseKey}`).update({
                 status: 'cancelled',
                 cancelledAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                showNotification("Panggilan dibatalkan.");
-            });
+            }).then(() => showNotification("Panggilan dibatalkan."));
         }
     }
 
     function showNotification(text) {
         notif.innerText = text;
-        notif.style.display = 'block';
-        setTimeout(() => notif.style.display = 'none', 3000);
+        notif.classList.add('show');
+        setTimeout(() => notif.classList.remove('show'), 3000);
     }
 
     function listenToMyPosStatus() {
@@ -269,22 +275,16 @@
             snapshot.forEach((childSnapshot) => {
                 const key = childSnapshot.key;
                 const call = childSnapshot.val();
-
-                // Memeriksa panggilan aktif untuk pos yang sedang login
                 if (call.status === 'active' && call.posId === currentPos.id) {
                     isCalling = true;
                     currentActiveFirebaseKey = key;
-                    if (call.replyNote) {
-                        noteFromSuper = call.replyNote;
-                    }
+                    if (call.replyNote) noteFromSuper = call.replyNote;
                 }
             });
 
             if (isCalling) {
                 posPanel.classList.add('calling');
-                displayPosType.innerText = "🚨 STATUS: MEMANGGIL SUPERVISOR...";
-                
-                // Menampilkan kotak pesan balasan jika supervisor sudah mengirim note
+                displayPosType.innerText = "🚨 Memanggil Supervisor...";
                 if (noteFromSuper) {
                     replyBox.style.display = 'block';
                     replyText.innerText = noteFromSuper;
