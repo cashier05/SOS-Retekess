@@ -253,6 +253,9 @@
         .who-item:last-child { margin-bottom: 0; }
         .who-item .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16,185,129,0.25); position: relative; }
         .who-item .av::after { content: ''; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 2px solid white; border-radius: 50%; }
+        .who-item .av.has-photo { background: transparent; box-shadow: none; border: 2px solid #10b981; overflow: hidden; }
+        .who-item .av.has-photo::after { display: none; }
+        .who-item .av.has-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         .who-item .nm { flex: 1; min-width: 0; }
         .who-item .nm strong { display: block; font-size: 0.88rem; color: #0f172a; font-weight: 800; }
         .who-item .nm small { font-size: 0.7rem; color: #64748b; font-weight: 500; }
@@ -824,8 +827,11 @@
                 const initial = name.charAt(0).toUpperCase();
                 const time = formatTimeAgoShort(item.onlineAt);
                 const device = item.device === 'mobile' ? '📱' : '💻';
+                const avatarHtml = item.photoURL
+                    ? `<div class="av has-photo"><img src="${escapeHtml(item.photoURL)}" alt="${escapeHtml(name)}" referrerpolicy="no-referrer"></div>`
+                    : `<div class="av">${escapeHtml(initial)}</div>`;
                 return `<div class="who-item">
-                    <div class="av">${escapeHtml(initial)}</div>
+                    ${avatarHtml}
                     <div class="nm">
                         <strong>${escapeHtml(name)}</strong>
                         <small>${device} Online ${time}</small>
