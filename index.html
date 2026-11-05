@@ -231,10 +231,34 @@
         }
         .header-pos-badge svg { width: 18px; height: 18px; color: white; }
         #headerPosName { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; line-height: 1.2; }
-        .supervisor-status-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 10px; display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; }
+        .supervisor-status-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 10px; display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; cursor: pointer; transition: transform 0.15s; }
+        .supervisor-status-badge:hover { transform: scale(1.04); }
         .supervisor-status-badge.offline { background: #fee2e2; color: #991b1b; }
         .supervisor-status-badge.online { background: #dcfce7; color: #166534; }
         .supervisor-status-badge.online::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,0.7); animation: pulse 2s infinite; }
+
+        /* Modal Siapa Online */
+        .who-modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; animation: kasirFade 0.2s ease; }
+        @keyframes kasirFade { from { opacity: 0; } to { opacity: 1; } }
+        .who-modal-overlay.visible { display: flex; }
+        .who-modal-card { background: white; border-radius: 24px; padding: 28px 22px 22px; width: 100%; max-width: 360px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); position: relative; animation: kasirCardIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes kasirCardIn { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .who-modal-card .who-icon { width: 56px; height: 56px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem; margin: 0 auto 14px; box-shadow: 0 8px 20px rgba(16,185,129,0.35); }
+        .who-modal-card h3 { font-size: 1.25rem; font-weight: 800; color: #0f172a; text-align: center; margin-bottom: 4px; }
+        .who-modal-card .who-sub { font-size: 0.82rem; color: #64748b; text-align: center; margin-bottom: 16px; }
+        .who-modal-card .who-close { position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+        .who-modal-card .who-close:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+        .who-list { text-align: left; max-height: 280px; overflow-y: auto; }
+        .who-item { display: flex; align-items: center; gap: 11px; padding: 10px 12px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; margin-bottom: 7px; }
+        .who-item:last-child { margin-bottom: 0; }
+        .who-item .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(16,185,129,0.25); position: relative; }
+        .who-item .av::after { content: ''; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 2px solid white; border-radius: 50%; }
+        .who-item .nm { flex: 1; min-width: 0; }
+        .who-item .nm strong { display: block; font-size: 0.88rem; color: #0f172a; font-weight: 800; }
+        .who-item .nm small { font-size: 0.7rem; color: #64748b; font-weight: 500; }
+        .who-empty { text-align: center; padding: 24px 12px; color: #64748b; }
+        .who-empty i { font-size: 2.2rem; opacity: 0.3; margin-bottom: 10px; display: block; }
+        .who-empty p { font-size: 0.85rem; font-weight: 600; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
 
         .btn-logout {
@@ -567,6 +591,24 @@
 
 <div id="notif">Notifikasi</div>
 
+<!-- Modal Siapa Online -->
+<div class="who-modal-overlay" id="whoOnlineModal">
+    <div class="who-modal-card">
+        <button class="who-close" onclick="closeWhoOnlineModal()" aria-label="Tutup">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="who-icon"><i class="fa-solid fa-users"></i></div>
+        <h3>Supervisor Online</h3>
+        <p class="who-sub" id="whoSub">Daftar supervisor yang sedang online</p>
+        <div class="who-list" id="whoList">
+            <div class="who-empty">
+                <i class="fa-solid fa-user-slash"></i>
+                <p>Memuat data...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB8qkD7b6zRqVXP0q8TTsstCUGfNkknEuY",
@@ -722,12 +764,86 @@
             if (count > 0) {
                 superStatusBadge.className = "supervisor-status-badge online";
                 superStatusBadge.innerText = `${count} Supervisor Online`;
+                superStatusBadge.title = "Klik untuk lihat nama supervisor online";
             } else {
                 superStatusBadge.className = "supervisor-status-badge offline";
                 superStatusBadge.innerText = "🔴 Supervisor Offline";
+                superStatusBadge.title = "Tidak ada supervisor online";
             }
         });
+        // Klik badge → buka modal
+        superStatusBadge.addEventListener('click', openWhoOnlineModal);
     }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function formatTimeAgoShort(timestamp) {
+        if (!timestamp) return '-';
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        if (seconds < 60) return 'baru saja';
+        const mins = Math.floor(seconds / 60);
+        if (mins < 60) return mins + ' mnt lalu';
+        const hours = Math.floor(mins / 60);
+        return hours + ' jam lalu';
+    }
+
+    function openWhoOnlineModal() {
+        document.getElementById('whoOnlineModal').classList.add('visible');
+        renderWhoOnlineList();
+    }
+
+    function closeWhoOnlineModal() {
+        document.getElementById('whoOnlineModal').classList.remove('visible');
+    }
+
+    function renderWhoOnlineList() {
+        database.ref('status_supervisor').once('value', (snap) => {
+            const list = document.getElementById('whoList');
+            const sub = document.getElementById('whoSub');
+            const items = [];
+            snap.forEach((child) => {
+                items.push(child.val());
+            });
+            items.sort((a, b) => (b.onlineAt || 0) - (a.onlineAt || 0));
+
+            if (items.length === 0) {
+                sub.innerText = 'Belum ada supervisor online';
+                list.innerHTML = `<div class="who-empty">
+                    <i class="fa-solid fa-user-slash"></i>
+                    <p>Semua supervisor sedang offline</p>
+                </div>`;
+                return;
+            }
+
+            sub.innerText = items.length + ' supervisor siap melayani';
+            list.innerHTML = items.map(item => {
+                const name = item.name || 'Supervisor';
+                const initial = name.charAt(0).toUpperCase();
+                const time = formatTimeAgoShort(item.onlineAt);
+                const device = item.device === 'mobile' ? '📱' : '💻';
+                return `<div class="who-item">
+                    <div class="av">${escapeHtml(initial)}</div>
+                    <div class="nm">
+                        <strong>${escapeHtml(name)}</strong>
+                        <small>${device} Online ${time}</small>
+                    </div>
+                </div>`;
+            }).join('');
+        });
+    }
+
+    // Click outside modal untuk tutup
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('whoOnlineModal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeWhoOnlineModal();
+            });
+        }
+    });
 
     function sendCall() {
         if (!currentPos) return;
