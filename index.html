@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Panggil Alarm - SPV</title>
+    <title>Sistem Panggil Alarm - Kasir</title>
 
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
@@ -662,6 +662,10 @@
             0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
             30% { transform: translateY(-6px); opacity: 1; }
         }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
         /* ============ NOTIF TOAST ============ */
         #notif {
@@ -1132,11 +1136,27 @@
 
     async function sendCall() {
         if (!currentPos) return null;
-        // Cek dulu kalau sudah ada panggilan aktif untuk pos ini
+        // Tombol "Panggil Supervisor" selalu berfungsi:
+        // - Kalau sudah ada panggilan aktif → pakai panggilan yang ada (tidak buat baru)
+        // - Kalau belum ada → buat panggilan baru
+        // Tidak perlu cek currentActiveFirebaseKey secara manual — biarkan Firebase
+        // yang jadi source of truth lewat listener.
+        
+        // Kalau sudah ada panggilan aktif, pakai yang ada
         if (currentActiveFirebaseKey) {
-            showNotification("ℹ️ Sudah ada panggilan aktif", "info");
+            showNotification("ℹ️ Panggilan sudah aktif — silakan kirim pesan", "info");
             return currentActiveFirebaseKey;
         }
+        
+        // Tambah loading state di tombol
+        const btnCall = document.querySelector('.btn-call');
+        const originalContent = btnCall ? btnCall.innerHTML : '';
+        if (btnCall) {
+            btnCall.disabled = true;
+            btnCall.style.opacity = '0.7';
+            btnCall.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Mengirim...';
+        }
+        
         const callData = {
             posId: currentPos.id,
             posName: currentPos.name,
@@ -1148,9 +1168,21 @@
             const newRef = await database.ref('panggilan').push(callData);
             currentActiveFirebaseKey = newRef.key;
             showNotification("✅ Panggilan terkirim ke Supervisor!", "success");
+            // Reset tombol call ke kondisi normal (panel calling akan hide tombol via CSS)
+            if (btnCall) {
+                btnCall.disabled = false;
+                btnCall.style.opacity = '';
+                btnCall.innerHTML = originalContent;
+            }
             return currentActiveFirebaseKey;
         } catch (err) {
             showNotification("Gagal mengirim panggilan.", "error");
+            // Reset tombol
+            if (btnCall) {
+                btnCall.disabled = false;
+                btnCall.style.opacity = '';
+                btnCall.innerHTML = originalContent;
+            }
             return null;
         }
     }
@@ -1165,12 +1197,29 @@
     }
 
     function cancelCall() {
-        if (currentActiveFirebaseKey) {
-            database.ref(`panggilan/${currentActiveFirebaseKey}`).update({
-                status: 'cancelled',
-                cancelledAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => showNotification("Panggilan dibatalkan.", "warning"));
+        if (!currentActiveFirebaseKey) return;
+        // Simpan key dulu sebelum di-null-kan
+        const callKey = currentActiveFirebaseKey;
+        // Langsung reset UI — jangan tunggu Firebase update
+        // Supaya tombol langsung kembali ke "Panggil Supervisor" tanpa loading
+        currentActiveFirebaseKey = null;
+        posPanel.classList.remove('calling');
+        displayPosType.innerText = currentPos.type;
+        replyBox.style.display = 'none';
+        // Reset chat ke empty state
+        chatMessages.innerHTML = '<div class="chat-empty"><i class="fa-solid fa-bell"></i>Belum ada pesan. Ketik pesan atau rekam voice note — panggilan supervisor akan otomatis dibuat.</div>';
+        // Reset tombol call (kalau ada loading state dari sendCall)
+        const btnCall = document.querySelector('.btn-call');
+        if (btnCall) {
+            btnCall.disabled = false;
+            btnCall.style.opacity = '';
         }
+        // Kirim update ke Firebase (tidak menunggu untuk reset UI)
+        database.ref(`panggilan/${callKey}`).update({
+            status: 'cancelled',
+            cancelledAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => showNotification("Panggilan dibatalkan.", "warning"))
+          .catch(() => {});
     }
 
     function showNotification(text, type = 'info') {
@@ -1194,8 +1243,13 @@
                     isCalling = true;
                     currentActiveFirebaseKey = key;
                     if (call.replyNote) noteFromSuper = call.replyNote;
-                    if (call.messages && Array.isArray(call.messages)) {
-                        messages = call.messages;
+                    // Konversi messages dari object ke array kalau perlu
+                    let msgs = call.messages;
+                    if (msgs && !Array.isArray(msgs) && typeof msgs === 'object') {
+                        msgs = Object.values(msgs);
+                    }
+                    if (msgs && Array.isArray(msgs)) {
+                        messages = msgs;
                     }
                 }
             });
