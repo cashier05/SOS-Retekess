@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistem Panggil Alarm - Kasir</title>
+    <title> Panggil Alarm - SPV</title>
 
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/hdwM43h8V6EeWHTA8Mxu/pub/0HnGoVRUn0BnbIqXvDVp.png">
@@ -350,14 +350,13 @@
 
         /* ============ CHAT BOX ============ */
         .chat-box {
-            display: none;
+            display: block;
             background: #f8fafc;
             border: 1px solid var(--border);
             border-radius: 16px;
             margin-bottom: 24px;
             overflow: hidden;
         }
-        .chat-box.visible { display: block; }
         .chat-header {
             background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
@@ -445,6 +444,124 @@
         .btn-send-msg:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .chat-empty { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.8rem; }
         .chat-empty i { font-size: 1.4rem; opacity: 0.4; margin-bottom: 6px; display: block; }
+
+        /* Voice note button di input area */
+        .btn-voice {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .btn-voice:hover { transform: scale(1.05); }
+        .btn-voice:active { transform: scale(0.95); }
+        .btn-voice.recording {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            animation: pulse-recording 1.2s infinite;
+        }
+        @keyframes pulse-recording {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .btn-voice svg { width: 16px; height: 16px; }
+        .btn-voice:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Recording indicator overlay */
+        .recording-indicator {
+            display: none;
+            position: absolute;
+            top: -36px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .recording-indicator.visible { display: flex; }
+        .recording-indicator .rec-dot {
+            width: 7px; height: 7px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse-recording 1s infinite;
+        }
+
+        /* Audio player di chat messages */
+        .voice-msg-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+        }
+        .voice-play-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: inherit;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .chat-msg.from-kasir .voice-play-btn { background: rgba(255,255,255,0.2); color: white; }
+        .chat-msg.from-supervisor .voice-play-btn { background: var(--primary); color: white; }
+        .voice-play-btn:hover { transform: scale(1.1); }
+        .voice-play-btn:active { transform: scale(0.95); }
+        .voice-waveform {
+            flex: 1;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .voice-waveform .wave-bar {
+            width: 2px;
+            background: currentColor;
+            opacity: 0.6;
+            border-radius: 1px;
+            transition: opacity 0.2s;
+        }
+        .voice-waveform.playing .wave-bar { animation: wave-bounce 0.6s infinite ease-in-out; }
+        .voice-waveform .wave-bar:nth-child(1) { height: 30%; animation-delay: 0s; }
+        .voice-waveform .wave-bar:nth-child(2) { height: 60%; animation-delay: 0.1s; }
+        .voice-waveform .wave-bar:nth-child(3) { height: 90%; animation-delay: 0.2s; }
+        .voice-waveform .wave-bar:nth-child(4) { height: 50%; animation-delay: 0.3s; }
+        .voice-waveform .wave-bar:nth-child(5) { height: 70%; animation-delay: 0.4s; }
+        .voice-waveform .wave-bar:nth-child(6) { height: 40%; animation-delay: 0.5s; }
+        .voice-waveform .wave-bar:nth-child(7) { height: 80%; animation-delay: 0.6s; }
+        .voice-waveform .wave-bar:nth-child(8) { height: 55%; animation-delay: 0.7s; }
+        .voice-waveform .wave-bar:nth-child(9) { height: 65%; animation-delay: 0.8s; }
+        .voice-waveform .wave-bar:nth-child(10) { height: 35%; animation-delay: 0.9s; }
+        @keyframes wave-bounce {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+        }
+        .voice-duration {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-weight: 600;
+            min-width: 32px;
+        }
+        .voice-note-label {
+            font-size: 0.65rem;
+            opacity: 0.8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
 
         .reply-box h4 {
             color: #166534;
@@ -673,12 +790,25 @@
                 </div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-empty">
-                        <i class="fa-solid fa-comment-dots"></i>
-                        Belum ada pesan
+                        <i class="fa-solid fa-bell"></i>
+                        Belum ada pesan. Ketik pesan atau rekam voice note — panggilan supervisor akan otomatis dibuat.
                     </div>
                 </div>
-                <div class="chat-input-wrap">
+                <div class="chat-input-wrap" style="position: relative;">
+                    <div class="recording-indicator" id="recordingIndicator">
+                        <span class="rec-dot"></span>
+                        <span id="recordingTime">0:00</span>
+                        <span style="opacity:0.6;">• ketuk stop untuk kirim</span>
+                    </div>
                     <input type="text" class="chat-input" id="chatInput" placeholder="Ketik pesan..." maxlength="200">
+                    <button class="btn-voice" id="btnVoice" onclick="toggleVoiceRecording()" title="Rekam pesan suara" aria-label="Rekam suara">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </button>
                     <button class="btn-send-msg" id="btnSendMsg" onclick="sendChatMessage()" title="Kirim pesan">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -791,6 +921,9 @@
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
     const btnSendMsg = document.getElementById('btnSendMsg');
+    const btnVoice = document.getElementById('btnVoice');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const recordingTime = document.getElementById('recordingTime');
     const notif = document.getElementById('notif');
     const superStatusBadge = document.getElementById('superStatusBadge');
 
@@ -997,17 +1130,38 @@
         }
     });
 
-    function sendCall() {
-        if (!currentPos) return;
+    async function sendCall() {
+        if (!currentPos) return null;
+        // Cek dulu kalau sudah ada panggilan aktif untuk pos ini
+        if (currentActiveFirebaseKey) {
+            showNotification("ℹ️ Sudah ada panggilan aktif", "info");
+            return currentActiveFirebaseKey;
+        }
         const callData = {
             posId: currentPos.id,
             posName: currentPos.name,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
-            status: 'active'
+            status: 'active',
+            messages: []
         };
-        database.ref('panggilan').push(callData)
-            .then(() => showNotification("✅ Panggilan terkirim ke Supervisor!", "success"))
-            .catch(() => showNotification("Gagal mengirim panggilan.", "error"));
+        try {
+            const newRef = await database.ref('panggilan').push(callData);
+            currentActiveFirebaseKey = newRef.key;
+            showNotification("✅ Panggilan terkirim ke Supervisor!", "success");
+            return currentActiveFirebaseKey;
+        } catch (err) {
+            showNotification("Gagal mengirim panggilan.", "error");
+            return null;
+        }
+    }
+
+    // Helper: pastikan ada panggilan aktif. Kalau belum, buat otomatis.
+    // Dipakai di sendChatMessage dan sendVoiceMessage supaya user tidak perlu
+    // klik "Panggil Supervisor" dulu sebelum chat/kirim voice note.
+    async function ensureCallActive() {
+        if (currentActiveFirebaseKey) return currentActiveFirebaseKey;
+        // Belum ada panggilan aktif — buat otomatis
+        return await sendCall();
     }
 
     function cancelCall() {
@@ -1049,12 +1203,10 @@
             if (isCalling) {
                 posPanel.classList.add('calling');
                 displayPosType.innerText = "🚨 Memanggil Supervisor...";
-                // Tampilkan chat box saat sedang memanggil
-                chatBox.classList.add('visible');
+                // Render chat messages
                 renderChatMessages(messages);
                 // Reply box lama (untuk backward compat dengan quick replies supervisor)
                 if (noteFromSuper) {
-                    // Cek apakah note sudah ada di messages, kalau belum tambahkan
                     const hasReply = messages.some(m => m.from === 'supervisor' && m.text === noteFromSuper);
                     if (!hasReply && noteFromSuper) {
                         replyBox.style.display = 'block';
@@ -1069,21 +1221,29 @@
                 posPanel.classList.remove('calling');
                 displayPosType.innerText = currentPos.type;
                 replyBox.style.display = 'none';
-                chatBox.classList.remove('visible');
+                // Chat box tetap visible — tampilkan empty state "belum panggil"
+                if (messages.length === 0) {
+                    chatMessages.innerHTML = '<div class="chat-empty"><i class="fa-solid fa-bell"></i>Belum ada pesan. Ketik pesan atau rekam voice note — panggilan supervisor akan otomatis dibuat.</div>';
+                } else {
+                    renderChatMessages(messages);
+                }
             }
         });
     }
 
     // ============ CHAT FUNCTIONS ============
-    function sendChatMessage() {
-        if (!currentActiveFirebaseKey) {
-            showNotification("Panggil supervisor dulu sebelum chat", "warning");
-            return;
-        }
+    async function sendChatMessage() {
         const text = chatInput.value.trim();
         if (!text) return;
         if (text.length > 200) {
             showNotification("Pesan terlalu panjang (max 200)", "warning");
+            return;
+        }
+
+        // Pastikan ada panggilan aktif — kalau belum, buat otomatis
+        const callId = await ensureCallActive();
+        if (!callId) {
+            showNotification("Gagal membuat panggilan", "error");
             return;
         }
 
@@ -1095,10 +1255,10 @@
         };
 
         // Ambil messages existing, lalu append
-        database.ref(`panggilan/${currentActiveFirebaseKey}/messages`).once('value', (snap) => {
+        database.ref(`panggilan/${callId}/messages`).once('value', (snap) => {
             const existing = snap.val() || [];
             existing.push(newMsg);
-            database.ref(`panggilan/${currentActiveFirebaseKey}/messages`).set(existing).then(() => {
+            database.ref(`panggilan/${callId}/messages`).set(existing).then(() => {
                 chatInput.value = '';
                 chatInput.focus();
             }).catch(err => {
@@ -1113,17 +1273,213 @@
             chatMessages.innerHTML = '<div class="chat-empty"><i class="fa-solid fa-comment-dots"></i>Belum ada pesan</div>';
             return;
         }
-        chatMessages.innerHTML = messages.map(msg => {
+        // Cache messages supaya playVoiceNote bisa akses via index
+        window.__chatMsgs = messages;
+        chatMessages.innerHTML = messages.map((msg, idx) => {
             const isFromKasir = msg.from === 'kasir';
             const time = formatChatTime(msg.sentAt);
             const sender = isFromKasir ? 'Anda' : 'Supervisor';
+            let contentHtml;
+            if (msg.type === 'voice' && msg.audioURL) {
+                // Voice note
+                const duration = msg.duration || 0;
+                const durationStr = formatDuration(duration);
+                contentHtml = `<div class="voice-msg-content">
+                    <button class="voice-play-btn" onclick="playVoiceNote(this, ${idx})" title="Putar">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                    <div class="voice-waveform">
+                        ${Array.from({length: 10}, (_, i) => '<div class="wave-bar"></div>').join('')}
+                    </div>
+                    <span class="voice-duration">${durationStr}</span>
+                </div>
+                <div class="voice-note-label">🎤 Voice Note</div>`;
+            } else {
+                // Text message
+                contentHtml = `<div>${escapeHtml(msg.text || '')}</div>`;
+            }
             return `<div class="chat-msg ${isFromKasir ? 'from-kasir' : 'from-supervisor'}">
-                <div>${escapeHtml(msg.text)}</div>
+                ${contentHtml}
                 <div class="msg-meta">${sender} • ${time}</div>
             </div>`;
         }).join('');
         // Scroll ke bawah
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds || seconds < 1) return '0:00';
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    // ============ VOICE NOTE FUNCTIONS ============
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordingTimer = null;
+    let recordingStartTime = 0;
+    let isRecording = false;
+
+    async function toggleVoiceRecording() {
+        if (isRecording) {
+            stopVoiceRecording();
+        } else {
+            await startVoiceRecording();
+        }
+    }
+
+    async function startVoiceRecording() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showNotification("Browser tidak mendukung rekaman suara", "error");
+            return;
+        }
+        // Pastikan ada panggilan aktif — kalau belum, buat otomatis
+        const callId = await ensureCallActive();
+        if (!callId) {
+            showNotification("Gagal membuat panggilan", "error");
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
+            let mimeType = '';
+            for (const mt of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break; }
+            }
+            mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 32000 } : undefined);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+                stream.getTracks().forEach(track => track.stop());
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Audio = reader.result;
+                    const duration = Math.round((Date.now() - recordingStartTime) / 1000);
+                    sendVoiceMessage(base64Audio, duration, mimeType || 'audio/webm');
+                };
+                reader.readAsDataURL(blob);
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            recordingStartTime = Date.now();
+            btnVoice.classList.add('recording');
+            btnVoice.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+            recordingIndicator.classList.add('visible');
+            chatInput.disabled = true;
+            chatInput.placeholder = 'Sedang merekam...';
+            recordingTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                recordingTime.innerText = formatDuration(elapsed);
+                if (elapsed >= 60) stopVoiceRecording();
+            }, 200);
+        } catch (err) {
+            console.error('Mic error:', err);
+            if (err.name === 'NotAllowedError') {
+                showNotification("Izin mikrofon ditolak. Aktifkan di pengaturan browser", "error");
+            } else {
+                showNotification("Tidak bisa akses mikrofon: " + err.message, "error");
+            }
+        }
+    }
+
+    function stopVoiceRecording() {
+        if (!mediaRecorder || !isRecording) return;
+        isRecording = false;
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+        try { mediaRecorder.stop(); } catch (e) {}
+        btnVoice.classList.remove('recording');
+        btnVoice.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>`;
+        recordingIndicator.classList.remove('visible');
+        chatInput.disabled = false;
+        chatInput.placeholder = 'Ketik pesan...';
+        recordingTime.innerText = '0:00';
+    }
+
+    async function sendVoiceMessage(audioDataURL, duration, mimeType) {
+        // Pastikan ada panggilan aktif (safety check — seharusnya sudah ada karena
+        // di-create saat startVoiceRecording)
+        const callId = await ensureCallActive();
+        if (!callId) {
+            showNotification("Gagal membuat panggilan", "error");
+            return;
+        }
+        if (audioDataURL.length > 700000) {
+            showNotification("Voice note terlalu panjang (maks 60 detik)", "error");
+            return;
+        }
+        const newMsg = {
+            from: 'kasir',
+            type: 'voice',
+            audioURL: audioDataURL,
+            audioMime: mimeType,
+            duration: duration,
+            sentAt: firebase.database.ServerValue.TIMESTAMP,
+            senderName: currentPos.name
+        };
+        try {
+            const snap = await database.ref(`panggilan/${callId}/messages`).once('value');
+            const existing = snap.val() || [];
+            existing.push(newMsg);
+            await database.ref(`panggilan/${callId}/messages`).set(existing);
+            showNotification("🎤 Voice note terkirim", "success");
+        } catch (err) {
+            showNotification("Gagal kirim voice note", "error");
+            console.error(err);
+        }
+    }
+
+    function playVoiceNote(btn, msgIdx) {
+        const msgs = window.__chatMsgs || [];
+        const msg = msgs[msgIdx];
+        if (!msg || !msg.audioURL) {
+            showNotification("Voice note tidak ditemukan", "error");
+            return;
+        }
+        const audioURL = msg.audioURL;
+        const icon = btn.querySelector('i');
+        const waveform = btn.parentElement.querySelector('.voice-waveform');
+        document.querySelectorAll('.voice-play-btn').forEach(b => {
+            if (b !== btn) {
+                b.querySelector('i').className = 'fa-solid fa-play';
+                b.parentElement.querySelector('.voice-waveform')?.classList.remove('playing');
+                if (b._audio) { b._audio.pause(); b._audio = null; }
+            }
+        });
+        if (icon.className.includes('fa-play')) {
+            const audio = new Audio(audioURL);
+            icon.className = 'fa-solid fa-pause';
+            waveform?.classList.add('playing');
+            audio.play();
+            audio.onended = () => {
+                icon.className = 'fa-solid fa-play';
+                waveform?.classList.remove('playing');
+                btn._audio = null;
+            };
+            audio.onerror = () => {
+                icon.className = 'fa-solid fa-play';
+                waveform?.classList.remove('playing');
+                showNotification("Tidak bisa putar voice note", "error");
+            };
+            btn._audio = audio;
+        } else {
+            if (btn._audio) {
+                btn._audio.pause();
+                btn._audio.currentTime = 0;
+                btn._audio = null;
+            }
+            icon.className = 'fa-solid fa-play';
+            waveform?.classList.remove('playing');
+        }
     }
 
     function formatChatTime(timestamp) {
