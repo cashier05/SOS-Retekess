@@ -693,6 +693,225 @@
         #notif.error { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
         #notif.warning { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
 
+        /* ============ HEADER RIGHT (kasir profile chip + logout) ============ */
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .kasir-profile-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 5px 12px 5px 5px;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: all 0.15s;
+            max-width: 200px;
+        }
+        .kasir-profile-chip:hover { background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px); }
+        .kasir-profile-chip:active { transform: translateY(0); }
+        .kasir-avatar-mini {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(79,70,229,0.25);
+        }
+        .kasir-avatar-mini img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .kasir-name-mini {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 130px;
+        }
+        .kasir-name-mini.empty { color: var(--text-muted); font-weight: 600; font-size: 0.74rem; }
+
+        /* ============ MODAL PROFIL KASIR ============ */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+            animation: kasirFade 0.2s ease;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-card-wrapper { position: relative; }
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 32px 24px 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: kasirCardIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-card .modal-icon {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.7rem;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px rgba(79,70,229,0.35);
+        }
+        .modal-card h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em; }
+        .modal-card p { color: var(--text-light); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+        .modal-card input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 700;
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        .modal-card input[type="text"]:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(79,70,229,0.12); }
+        .modal-card input[type="text"]::placeholder { color: var(--text-muted); font-weight: 500; }
+        .modal-card .btn-modal {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(79,70,229,0.3);
+            transition: all 0.15s;
+        }
+        .modal-card .btn-modal:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(79,70,229,0.4); }
+        .modal-card .btn-modal:active { transform: translateY(0); }
+        .modal-close-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-light);
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem;
+            position: absolute;
+            top: 16px; right: 16px;
+            transition: all 0.15s;
+            z-index: 1;
+        }
+        .modal-close-btn:hover { background: var(--danger-light); color: var(--danger); border-color: #fecaca; }
+
+        /* ============ PHOTO UPLOAD ============ */
+        .photo-upload-section { margin-bottom: 18px; }
+        .photo-preview-wrap {
+            position: relative;
+            width: 96px; height: 96px;
+            margin: 0 auto 12px;
+        }
+        .photo-preview {
+            width: 96px; height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(79,70,229,0.3);
+            border: 3px solid white;
+            overflow: hidden;
+            position: relative;
+        }
+        .photo-preview img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .photo-upload-btn {
+            position: absolute;
+            bottom: -2px; right: -2px;
+            background: white;
+            border: 2px solid var(--border);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 0.85rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: all 0.15s;
+        }
+        .photo-upload-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .photo-upload-btn input[type="file"] { display: none; }
+        .photo-preset-label {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        .photo-presets {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .photo-preset {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 800;
+            transition: all 0.15s;
+            background-size: cover;
+            background-position: center;
+            padding: 0;
+        }
+        .photo-preset:hover { transform: scale(1.1); border-color: var(--primary); }
+        .photo-preset.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.2); }
+        .btn-remove-photo {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            display: block;
+            margin: 4px auto 0;
+        }
+
         @media (max-width: 640px) {
             .pos-panel { padding: 32px 22px 28px; }
             .pos-panel h2 { font-size: 1.85rem; }
@@ -700,6 +919,9 @@
             .login-card { padding: 32px 22px 24px; }
             .login-card h2 { font-size: 1.4rem; }
             .btn-main { padding: 20px; font-size: 1.05rem; }
+            .kasir-name-mini { display: none; }
+            .kasir-profile-chip { padding: 4px; max-width: none; }
+            .photo-presets { grid-template-columns: repeat(6, 1fr); }
         }
     </style>
 </head>
@@ -766,14 +988,22 @@
                 <div id="superStatusBadge" class="supervisor-status-badge offline">🔴 Mengecek status...</div>
             </div>
         </div>
-        <button class="btn-logout" onclick="logoutPos()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Logout
-        </button>
+        <div class="header-right">
+            <div class="kasir-profile-chip" id="kasirProfileChip" onclick="showNameModal()" title="Edit profil (nama & foto)" role="button" tabindex="0">
+                <div class="kasir-avatar-mini" id="kasirHeaderAvatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <span class="kasir-name-mini empty" id="kasirHeaderName">Atur Nama</span>
+            </div>
+            <button class="btn-logout" onclick="logoutPos()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Logout
+            </button>
+        </div>
     </header>
 
     <div class="container" id="kasirContainer">
@@ -848,6 +1078,43 @@
 </div>
 
 <div id="notif">Notifikasi</div>
+
+<!-- Modal Profil Kasir (nama & foto) -->
+<div class="modal-overlay" id="nameModal">
+    <div class="modal-card-wrapper">
+        <button class="modal-close-btn" onclick="closeNameModal()" aria-label="Tutup">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fa-solid fa-user-tag"></i></div>
+            <h3>Selamat Datang, Kasir!</h3>
+            <p>Masukkan nama dan foto profil Anda agar supervisor tahu siapa yang memanggil.</p>
+            <div class="photo-upload-section">
+                <div class="photo-preview-wrap">
+                    <div class="photo-preview" id="photoPreview">
+                        <i class="fa-solid fa-user" id="photoPreviewIcon"></i>
+                    </div>
+                    <label class="photo-upload-btn" title="Upload foto">
+                        <i class="fa-solid fa-camera"></i>
+                        <input type="file" id="photoFileInput" accept="image/*">
+                    </label>
+                </div>
+                <button class="btn-remove-photo" id="btnRemovePhoto" onclick="removePhoto()" style="display:none;">Hapus foto</button>
+                <div class="photo-preset-label">Atau pilih avatar:</div>
+                <div class="photo-presets" id="photoPresets">
+                    <button type="button" class="photo-preset" data-emoji="👨" style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);" onclick="selectPresetAvatar(this, '👨')">👨</button>
+                    <button type="button" class="photo-preset" data-emoji="👩" style="background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);" onclick="selectPresetAvatar(this, '👩')">👩</button>
+                    <button type="button" class="photo-preset" data-emoji="🧑" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);" onclick="selectPresetAvatar(this, '🧑')">🧑</button>
+                    <button type="button" class="photo-preset" data-emoji="👨‍💼" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);" onclick="selectPresetAvatar(this, '👨‍💼')">👨‍💼</button>
+                    <button type="button" class="photo-preset" data-emoji="👩‍💼" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);" onclick="selectPresetAvatar(this, '👩‍💼')">👩‍💼</button>
+                    <button type="button" class="photo-preset" data-emoji="🧔" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);" onclick="selectPresetAvatar(this, '🧔')">🧔</button>
+                </div>
+            </div>
+            <input type="text" id="kasirNameInput" placeholder="Contoh: Andi, Budi, Sinta, dll" maxlength="30" autocomplete="off">
+            <button class="btn-modal" onclick="saveKasirName()">Simpan & Lanjutkan</button>
+        </div>
+    </div>
+</div>
 
 <!-- Modal Siapa Online -->
 <div class="who-modal-overlay" id="whoOnlineModal">
@@ -1037,6 +1304,12 @@
         displayPosName.innerText = currentPos.name;
         displayPosType.innerText = currentPos.type;
         listenToMyPosStatus();
+        // Update profil chip di header (nama + foto kasir)
+        updateKasirProfileChip();
+        // Tampilkan modal input nama kalau belum diset
+        if (!getKasirName()) {
+            setTimeout(showNameModal, 400);
+        }
     }
 
     function logoutPos() {
@@ -1160,6 +1433,8 @@
         const callData = {
             posId: currentPos.id,
             posName: currentPos.name,
+            kasirName: getKasirName() || '',
+            kasirPhoto: getKasirPhoto() || '',
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             status: 'active',
             messages: []
@@ -1301,11 +1576,13 @@
             return;
         }
 
+        const kasirName = getKasirName();
         const newMsg = {
             from: 'kasir',
             text: text,
             sentAt: firebase.database.ServerValue.TIMESTAMP,
-            senderName: currentPos.name
+            senderName: kasirName ? kasirName + ' (' + currentPos.name + ')' : currentPos.name,
+            senderPhoto: getKasirPhoto() || ''
         };
 
         // Ambil messages existing, lalu append
@@ -1471,6 +1748,7 @@
             showNotification("Voice note terlalu panjang (maks 60 detik)", "error");
             return;
         }
+        const kasirName = getKasirName();
         const newMsg = {
             from: 'kasir',
             type: 'voice',
@@ -1478,7 +1756,8 @@
             audioMime: mimeType,
             duration: duration,
             sentAt: firebase.database.ServerValue.TIMESTAMP,
-            senderName: currentPos.name
+            senderName: kasirName ? kasirName + ' (' + currentPos.name + ')' : currentPos.name,
+            senderPhoto: getKasirPhoto() || ''
         };
         try {
             const snap = await database.ref(`panggilan/${callId}/messages`).once('value');
@@ -1548,6 +1827,194 @@
         if (!str) return '';
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
+
+    // ============ KASIR PROFILE (nama & foto) ============
+    function getKasirName() {
+        return localStorage.getItem('kasirName') || '';
+    }
+
+    function getKasirPhoto() {
+        return localStorage.getItem('kasirPhoto') || '';
+    }
+
+    let selectedPresetEmoji = null;
+
+    function showNameModal() {
+        document.getElementById('nameModal').classList.add('visible');
+        const input = document.getElementById('kasirNameInput');
+        input.value = getKasirName();
+        // Load existing photo kalau ada
+        const existingPhoto = getKasirPhoto();
+        if (existingPhoto) {
+            updatePhotoPreview(existingPhoto);
+        } else {
+            resetPhotoPreview();
+        }
+        setTimeout(() => input.focus(), 100);
+    }
+
+    function closeNameModal() {
+        // Hanya boleh tutup kalau nama sudah diset (jangan biarkan kosong)
+        if (!getKasirName()) {
+            showNotification("⚠️ Nama harus diisi dulu", "warning");
+            return;
+        }
+        document.getElementById('nameModal').classList.remove('visible');
+    }
+
+    function saveKasirName() {
+        const name = document.getElementById('kasirNameInput').value.trim();
+        if (!name) {
+            showNotification("⚠️ Nama tidak boleh kosong", "warning");
+            return;
+        }
+        localStorage.setItem('kasirName', name);
+        document.getElementById('nameModal').classList.remove('visible');
+        updateKasirProfileChip();
+        showNotification("✅ Profil tersimpan: " + name, "success");
+    }
+
+    function updateKasirProfileChip() {
+        const name = getKasirName();
+        const photo = getKasirPhoto();
+        const nameEl = document.getElementById('kasirHeaderName');
+        const avatarEl = document.getElementById('kasirHeaderAvatar');
+        if (!nameEl || !avatarEl) return;
+        // Update nama
+        if (name) {
+            nameEl.innerText = name;
+            nameEl.classList.remove('empty');
+        } else {
+            nameEl.innerText = 'Atur Nama';
+            nameEl.classList.add('empty');
+        }
+        // Update avatar
+        const oldImg = avatarEl.querySelector('img');
+        if (oldImg) oldImg.remove();
+        const oldIcon = avatarEl.querySelector('i');
+        if (photo) {
+            if (oldIcon) oldIcon.style.display = 'none';
+            const img = document.createElement('img');
+            img.src = photo;
+            img.alt = name;
+            avatarEl.appendChild(img);
+        } else {
+            if (oldIcon) oldIcon.style.display = 'block';
+        }
+    }
+
+    // ============ PHOTO UPLOAD & COMPRESSION ============
+    function handlePhotoUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            showNotification("⚠️ File harus berupa gambar", "warning");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification("⚠️ Ukuran file maksimal 5MB", "warning");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                // Resize ke 128x128 (center crop)
+                const canvas = document.createElement('canvas');
+                const size = 128;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                const minDim = Math.min(img.width, img.height);
+                const sx = (img.width - minDim) / 2;
+                const sy = (img.height - minDim) / 2;
+                ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+                // Compress ke JPEG quality 0.7
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                localStorage.setItem('kasirPhoto', dataUrl);
+                updatePhotoPreview(dataUrl);
+                selectedPresetEmoji = null;
+                document.querySelectorAll('.photo-preset').forEach(b => b.classList.remove('selected'));
+                showNotification("📷 Foto profil diperbarui", "success");
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function selectPresetAvatar(btn, emoji) {
+        document.querySelectorAll('.photo-preset').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedPresetEmoji = emoji;
+        // Render preset sebagai SVG data URL dengan emoji.
+        // Pakai URL-encoding (encodeURIComponent) supaya support karakter emoji
+        // (btoa() gagal untuk karakter multi-byte di luar Latin1).
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><text x="64" y="64" font-size="80" text-anchor="middle" dominant-baseline="central">${emoji}</text></svg>`;
+        const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        localStorage.setItem('kasirPhoto', dataUrl);
+        updatePhotoPreview(dataUrl);
+    }
+
+    function removePhoto() {
+        localStorage.removeItem('kasirPhoto');
+        selectedPresetEmoji = null;
+        document.querySelectorAll('.photo-preset').forEach(b => b.classList.remove('selected'));
+        resetPhotoPreview();
+        const photoInput = document.getElementById('photoFileInput');
+        if (photoInput) photoInput.value = '';
+        showNotification("Foto dihapus", "info");
+    }
+
+    function updatePhotoPreview(dataUrl) {
+        const preview = document.getElementById('photoPreview');
+        const icon = document.getElementById('photoPreviewIcon');
+        const removeBtn = document.getElementById('btnRemovePhoto');
+        if (!preview) return;
+        const oldImg = preview.querySelector('img');
+        if (oldImg) oldImg.remove();
+        if (icon) icon.style.display = 'none';
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        preview.appendChild(img);
+        if (removeBtn) removeBtn.style.display = 'block';
+    }
+
+    function resetPhotoPreview() {
+        const preview = document.getElementById('photoPreview');
+        const icon = document.getElementById('photoPreviewIcon');
+        const removeBtn = document.getElementById('btnRemovePhoto');
+        if (!preview) return;
+        const oldImg = preview.querySelector('img');
+        if (oldImg) oldImg.remove();
+        if (icon) icon.style.display = 'block';
+        if (removeBtn) removeBtn.style.display = 'none';
+        document.querySelectorAll('.photo-preset').forEach(b => b.classList.remove('selected'));
+        const photoInput = document.getElementById('photoFileInput');
+        if (photoInput) photoInput.value = '';
+    }
+
+    // ============ INIT PROFIL (event listeners) ============
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('kasirNameInput');
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') saveKasirName();
+            });
+        }
+        const photoInput = document.getElementById('photoFileInput');
+        if (photoInput) {
+            photoInput.addEventListener('change', handlePhotoUpload);
+        }
+        // Click outside modal untuk tutup (hanya kalau nama sudah diset)
+        const nameModal = document.getElementById('nameModal');
+        if (nameModal) {
+            nameModal.addEventListener('click', (e) => {
+                if (e.target === nameModal && getKasirName()) {
+                    nameModal.classList.remove('visible');
+                }
+            });
+        }
+    });
 </script>
 
 </body>
