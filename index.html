@@ -1609,9 +1609,13 @@
         chatMessages.innerHTML = messages.map((msg, idx) => {
             const isFromKasir = msg.from === 'kasir';
             const time = formatChatTime(msg.sentAt);
-            // Tampilkan nama kasir (bukan cuma "Anda") supaya identitas pengirim jelas
+            // Tampilkan nama pengirim sebenarnya:
+            // - Kasir: nama sendiri (dari getKasirName), fallback "Anda"
+            // - Supervisor: nama dari msg.senderName (dikirim supervisor saat balas), fallback "Supervisor"
             const myName = getKasirName();
-            const sender = isFromKasir ? (myName ? myName : 'Anda') : 'Supervisor';
+            const sender = isFromKasir
+                ? (myName ? myName : 'Anda')
+                : (msg.senderName || 'Supervisor');
             let contentHtml;
             if (msg.type === 'voice' && msg.audioURL) {
                 // Voice note
