@@ -1609,7 +1609,9 @@
         chatMessages.innerHTML = messages.map((msg, idx) => {
             const isFromKasir = msg.from === 'kasir';
             const time = formatChatTime(msg.sentAt);
-            const sender = isFromKasir ? 'Anda' : 'Supervisor';
+            // Tampilkan nama kasir (bukan cuma "Anda") supaya identitas pengirim jelas
+            const myName = getKasirName();
+            const sender = isFromKasir ? (myName ? myName : 'Anda') : 'Supervisor';
             let contentHtml;
             if (msg.type === 'voice' && msg.audioURL) {
                 // Voice note
